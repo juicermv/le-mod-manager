@@ -3,8 +3,9 @@ use dioxus::prelude::*;
 
 #[component]
 pub fn App() -> Element {
-    let app_state = use_context_provider(|| AppState {
-        filepath: Signal::new("".into())
+    // Create state
+    use_context_provider(|| AppState {
+        filepath: Signal::new("".into()),
     });
 
     rsx! {

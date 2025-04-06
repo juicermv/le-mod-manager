@@ -8,15 +8,15 @@ use crate::pages::*;
 #[derive(Routable, Clone, PartialEq, EnumIter, MotionTransitions)]
 pub enum Route {
     #[layout(Navbar)]
-    #[transition(Fade)]
+    #[transition(SlideUp)]
     #[route("/")]
     Home {},
 
-    #[transition(Fade)]
+    #[transition(SlideUp)]
     #[route("/settings")]
     Settings {},
 
-    #[transition(Fade)]
+    #[transition(SlideUp)]
     #[route("/:..segments")]
     NotFound { segments: Vec<String> },
 }
