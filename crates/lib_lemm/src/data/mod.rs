@@ -1,5 +1,6 @@
 mod package;
 mod util;
+mod archive;
 
 pub use package::PackageWriter;
 pub use package::PackageReader;

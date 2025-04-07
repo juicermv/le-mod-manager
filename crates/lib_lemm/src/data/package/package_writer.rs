@@ -5,7 +5,7 @@ use crate::data::package::package_member_raw::PackageMemberRaw;
 use crate::data::package::package_reader::PackageReader;
 use anyhow::{anyhow, Result};
 use std::fs::File;
-use std::io::Write;
+use std::io::{Seek, Write};
 use std::path::{Path, PathBuf};
 
 pub struct PackageWriter {
@@ -60,15 +60,19 @@ impl PackageWriter {
         Ok(())
     }
 
-    pub fn append(&self, members: &Vec<(PackageMemberHeader, Vec<u8>)>) -> Result<()> {
+
+    // Appends members to package file and returns positions at which they were appended
+    pub fn append(&self, members: &Vec<(PackageMemberHeader, Vec<u8>)>) -> Result<Vec<u64>> {
         let mut reader = PackageReader::new(self.path.clone());
         match reader.read_header() {
             // Check that we are appending to a valid package file
             Err(e) => Err(e),
             Ok(_) => {
+                let mut positions: Vec<u64> = Vec::with_capacity(members.len());
                 let mut file = File::options().append(true).open(&self.path)?;
                 for header_data in members {
                     let member_raw = PackageMemberRaw::from((*header_data).clone());
+                    positions.push(file.stream_position()?);
 
                     file.write_all(&[member_raw.f_type])?;
                     file.write_all(&member_raw.f_name)?;
@@ -76,7 +80,7 @@ impl PackageWriter {
                     file.write_all(&member_raw.f_content)?;
                 }
 
-                Ok(())
+                Ok(positions)
             }
         }
     }
