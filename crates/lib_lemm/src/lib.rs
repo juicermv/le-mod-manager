@@ -108,7 +108,7 @@ mod tests {
                         content_length: buffer.len() as u64,
                     },
                     buffer,
-                )])?
+                )])?;
             }
         }
 

@@ -60,19 +60,22 @@ impl PackageWriter {
         Ok(())
     }
 
-
     // Appends members to package file and returns positions at which they were appended
-    pub fn append(&self, members: &Vec<(PackageMemberHeader, Vec<u8>)>) -> Result<Vec<u64>> {
+    pub fn append(
+        &self,
+        members: &Vec<(PackageMemberHeader, Vec<u8>)>,
+    ) -> Result<Vec<(PackageMemberHeader, u64)>> {
         let mut reader = PackageReader::new(self.path.clone());
         match reader.read_header() {
             // Check that we are appending to a valid package file
             Err(e) => Err(e),
             Ok(_) => {
-                let mut positions: Vec<u64> = Vec::with_capacity(members.len());
+                let mut positions: Vec<(PackageMemberHeader, u64)> =
+                    Vec::with_capacity(members.len());
                 let mut file = File::options().append(true).open(&self.path)?;
                 for header_data in members {
                     let member_raw = PackageMemberRaw::from((*header_data).clone());
-                    positions.push(file.stream_position()?);
+                    positions.push((*header_data.0, file.stream_position()?));
 
                     file.write_all(&[member_raw.f_type])?;
                     file.write_all(&member_raw.f_name)?;

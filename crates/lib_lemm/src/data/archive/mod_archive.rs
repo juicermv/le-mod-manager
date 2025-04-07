@@ -95,9 +95,8 @@ impl ModArchive {
         };
 
         let pkg_writer = PackageWriter::new(self.pkg_path.clone());
-        let position = pkg_writer.append(&vec![(header.clone(), compressed_file)])?[0];
-
-        self.pkg_members.push((header, position));
+        self.pkg_members
+            .push(*pkg_writer.append(&vec![(header.clone(), compressed_file)])?[0]);
         Ok(())
     }
     pub fn get_file_queue(&self, file_type: PackageMemberType) -> FileQueue {
@@ -131,7 +130,7 @@ impl ModArchive {
         }
     }
 
-    pub fn clear_files(&mut self) -> Result<()>{
+    pub fn clear_files(&mut self) -> Result<()> {
         self.pkg_members.clear();
         let pkg_writer = PackageWriter::new(self.pkg_path.clone());
 
