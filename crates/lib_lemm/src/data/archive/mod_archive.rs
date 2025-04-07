@@ -1,5 +1,8 @@
 use crate::data::archive::file_queue::FileQueue;
-use crate::data::{from_ascii_array, to_ascii_array, PackageHeader, PackageMemberHeader, PackageMemberType, PackageReader, PackageWriter};
+use crate::data::{
+    from_ascii_array, to_ascii_array, PackageHeader, PackageMemberHeader, PackageMemberType,
+    PackageReader, PackageWriter,
+};
 use anyhow::Result;
 use ascii::AsciiChar;
 use flate2::read::{GzDecoder, GzEncoder};
@@ -93,17 +96,16 @@ impl ModArchive {
 
         let pkg_writer = PackageWriter::new(self.pkg_path.clone());
         self.pkg_members
-            .push(*pkg_writer.append(&vec![(header.clone(), compressed_file)])?[0]);
+            .push(pkg_writer.append(&vec![(header.clone(), compressed_file)])?[0].clone());
         Ok(())
     }
     pub fn get_file_queue(&self, file_type: PackageMemberType) -> FileQueue {
         FileQueue {
             q: VecDeque::from(
-                *self
-                    .pkg_members
+                self.pkg_members
                     .iter()
                     .filter(|(header, _)| header.file_type == file_type)
-                    .collect::<Vec<_>>(),
+                    .cloned(),
             ),
         }
     }

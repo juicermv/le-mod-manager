@@ -75,7 +75,7 @@ impl PackageWriter {
                 let mut file = File::options().append(true).open(&self.path)?;
                 for header_data in members {
                     let member_raw = PackageMemberRaw::from((*header_data).clone());
-                    positions.push((*header_data.0, file.stream_position()?));
+                    positions.push((header_data.0.clone(), file.stream_position()?));
 
                     file.write_all(&[member_raw.f_type])?;
                     file.write_all(&member_raw.f_name)?;
