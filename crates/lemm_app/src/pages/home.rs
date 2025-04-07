@@ -1,5 +1,5 @@
 use dioxus::prelude::*;
-use rfd::{AsyncFileDialog, FileHandle};
+use rfd::AsyncFileDialog;
 
 use crate::{
     components::{Button, Container},

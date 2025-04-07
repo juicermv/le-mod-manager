@@ -1,4 +1,4 @@
-use dioxus::{html::li, prelude::*};
+use dioxus::prelude::*;
 use dioxus_motion::transitions::page_transitions::AnimatedOutlet;
 use strum::IntoEnumIterator;
 
