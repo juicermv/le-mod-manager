@@ -3,10 +3,9 @@ use crate::data::package::package_header_raw::PackageHeaderRaw;
 use crate::data::package::package_member_header::PackageMemberHeader;
 use crate::data::package::package_member_raw::PackageMemberRaw;
 use anyhow::{anyhow, Result};
-use std::collections::HashMap;
 use std::fs::File;
 use std::io::{Read, Seek, SeekFrom};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 pub struct PackageReader {
     path: PathBuf,

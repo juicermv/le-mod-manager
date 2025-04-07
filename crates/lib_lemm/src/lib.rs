@@ -1,5 +1,3 @@
-use anyhow::Result;
-
 pub mod data;
 
 pub fn add(left: u64, right: u64) -> u64 {
@@ -13,15 +11,17 @@ mod tests {
         to_ascii_array, PackageHeader, PackageMemberHeader, PackageMemberType, PackageReader,
         PackageWriter,
     };
-    use ascii::AsciiChar::r;
-    use ascii::{AsAsciiStr, AsciiChar};
-    use flate2::read::{GzDecoder, GzEncoder, ZlibEncoder};
-    use std::fmt::Debug;
+    
+    use ascii::AsAsciiStr;
+    use flate2::read::{GzDecoder, GzEncoder};
+    
     use std::fs;
     use std::fs::File;
-    use std::io::{Read, Seek, Write};
+    use std::io::{Read, Write};
     use std::path::PathBuf;
-    use text_io::read;
+    
+    use anyhow::Result;
+
 
     #[test]
     fn it_works() {
@@ -81,7 +81,7 @@ mod tests {
              "../lemm_app/Dioxus.toml"
         ];
 
-        let mut writer = PackageWriter::new("./hello2.lemm".into());
+        let writer = PackageWriter::new("./hello2.lemm".into());
         let header = PackageHeader {
             mod_name: to_ascii_array("An LE mod"),
             mod_author: to_ascii_array("juicermv"),

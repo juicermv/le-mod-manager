@@ -3,10 +3,10 @@ use crate::data::package::package_header_raw::PackageHeaderRaw;
 use crate::data::package::package_member_header::PackageMemberHeader;
 use crate::data::package::package_member_raw::PackageMemberRaw;
 use crate::data::package::package_reader::PackageReader;
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use std::fs::File;
 use std::io::{Seek, Write};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 pub struct PackageWriter {
     path: PathBuf,
@@ -65,7 +65,7 @@ impl PackageWriter {
         &self,
         members: &Vec<(PackageMemberHeader, Vec<u8>)>,
     ) -> Result<Vec<(PackageMemberHeader, u64)>> {
-        let mut reader = PackageReader::new(self.path.clone());
+        let reader = PackageReader::new(self.path.clone());
         match reader.read_header() {
             // Check that we are appending to a valid package file
             Err(e) => Err(e),

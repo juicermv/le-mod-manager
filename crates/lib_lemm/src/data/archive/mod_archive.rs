@@ -4,13 +4,11 @@ use crate::data::{
     PackageReader, PackageWriter,
 };
 use anyhow::Result;
-use ascii::AsciiChar;
 use flate2::read::{GzDecoder, GzEncoder};
 use flate2::Compression;
-use std::collections::{HashMap, HashSet, VecDeque};
-use std::fs::{File, FileType};
-use std::io::{empty, Read};
-use std::iter::Map;
+use std::collections::VecDeque;
+use std::fs::File;
+use std::io::Read;
 use std::path::{Path, PathBuf};
 
 pub struct ModArchive {

@@ -1,6 +1,5 @@
 use crate::data::package::package_header::PackageHeader;
 use ascii::AsciiChar;
-use crate::data::package::package_member_header::PackageMemberHeader;
 
 #[derive(Default, Clone, Debug, PartialEq)]
 pub struct PackageHeaderRaw {
