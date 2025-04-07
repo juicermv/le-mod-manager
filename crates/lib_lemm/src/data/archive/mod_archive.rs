@@ -1,8 +1,5 @@
 use crate::data::archive::file_queue::FileQueue;
-use crate::data::{
-    to_ascii_array, PackageHeader, PackageMemberHeader, PackageMemberType, PackageReader,
-    PackageWriter,
-};
+use crate::data::{from_ascii_array, to_ascii_array, PackageHeader, PackageMemberHeader, PackageMemberType, PackageReader, PackageWriter};
 use anyhow::Result;
 use ascii::AsciiChar;
 use flate2::read::{GzDecoder, GzEncoder};
@@ -72,15 +69,15 @@ impl ModArchive {
     }
 
     pub fn get_mod_name(&self) -> &str {
-        self.pkg_header.mod_name.into()
+        &from_ascii_array(&self.pkg_header.mod_name)
     }
 
     pub fn get_mod_author(&self) -> &str {
-        self.pkg_header.mod_author.into()
+        &from_ascii_array(&self.pkg_header.mod_author)
     }
 
     pub fn get_mod_version(&self) -> &str {
-        self.pkg_header.mod_version.into()
+        &from_ascii_array(&self.pkg_header.mod_version.into())
     }
 
     fn add_file(&mut self, path: impl AsRef<Path>, file_type: PackageMemberType) -> Result<()> {
