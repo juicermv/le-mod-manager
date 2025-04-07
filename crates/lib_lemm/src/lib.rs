@@ -8,9 +8,13 @@ pub fn add(left: u64, right: u64) -> u64 {
 
 #[cfg(test)]
 mod tests {
-    use crate::data::{Package, PackageFile};
-
     use super::*;
+    use crate::data::{
+        to_ascii_array, PackageHeader, PackageMemberHeader, PackageMemberType, PackageReader,
+        PackageWriter,
+    };
+    use ascii::AsciiChar::r;
+    use ascii::{AsAsciiStr, AsciiChar};
 
     #[test]
     fn it_works() {
@@ -20,28 +24,45 @@ mod tests {
 
     #[test]
     fn pkg_writing() -> Result<()> {
-        let mut pkg = Package::new();
-        pkg.set_mod_name("MOD NAME")?;
-        pkg.set_mod_author("THE LORD")?;
-        pkg.set_mod_version("1.22")?;
+        let writer = PackageWriter::new("./hello.lemm".into());
+        let header = PackageHeader {
+            mod_name: to_ascii_array("An LE mod"),
+            mod_author: to_ascii_array("The Lord"),
+            mod_version: to_ascii_array("1.21"),
+        };
 
-        pkg.add_file(PackageFile {
-            name: "FILE1.ini".into(),
-            file_type: data::PackageFileType::INI,
-            data: "[core]\nnothing=true".as_bytes().to_vec(),
-        })?;
+        let files: Vec<(PackageMemberHeader, Vec<u8>)> = vec![
+            (
+                PackageMemberHeader {
+                    file_type: PackageMemberType::INI,
+                    file_name: to_ascii_array("mod.ini"),
+                    content_length: 0,
+                },
+                "Hello".as_bytes().to_vec(),
+            ),
+            (
+                PackageMemberHeader {
+                    file_type: PackageMemberType::CONFIG,
+                    file_name: to_ascii_array("mod_cfg.cfg"),
+                    content_length: 0,
+                },
+                "This is a config!".as_bytes().to_vec(),
+            ),
+        ];
 
-        pkg.add_file(PackageFile {
-            name: "FILE2.pkg".into(),
-            file_type: data::PackageFileType::PKG,
-            data: "NOT VALID DATA!".as_bytes().to_vec(),
-        })?;
+        writer.write(&header, &files)?;
 
-        pkg.write("./hello.lemm")?;
+        let reader = PackageReader::new("./hello.lemm".into());
+        let read_header = reader.read_header()?;
+        let read_member_headers = reader.read_member_headers()?;
+        let read_member_data = reader.read_member_contents(read_member_headers)?;
 
-        let mut new_pkg = Package::from_disk("./hello.lemm")?;
-        new_pkg.load_files()?;
-        assert_eq!(new_pkg, pkg);
+        for (i, (header, data)) in read_member_data.iter().enumerate() {
+            assert_eq!(
+                String::from_utf8(files[i].1.clone()),
+                String::from_utf8(data.clone())
+            );
+        }
 
         Ok(())
     }

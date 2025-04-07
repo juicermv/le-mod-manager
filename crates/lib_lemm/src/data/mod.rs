@@ -1,5 +1,10 @@
 mod package;
+mod util;
 
-pub use package::Package;
-pub use package::PackageFile;
-pub use package::PackageFileType;
+pub use package::PackageWriter;
+pub use package::PackageReader;
+pub use package::PackageHeader;
+pub use package::PackageMemberHeader;
+pub use package::PackageMemberType;
+
+pub use util::*;
