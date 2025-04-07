@@ -1,7 +1,8 @@
 use anyhow::anyhow;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Default)]
 pub enum PackageMemberType {
+    #[default]
     TEXTURE,
     ETexture,
     CFGPBR,

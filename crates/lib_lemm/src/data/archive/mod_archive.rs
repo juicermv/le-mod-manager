@@ -71,16 +71,16 @@ impl ModArchive {
         &self.pkg_path
     }
 
-    pub fn get_mod_name(&self) -> &str {
-        &from_ascii_array(&self.pkg_header.mod_name)
+    pub fn get_mod_name(&self) -> String {
+        from_ascii_array(&self.pkg_header.mod_name)
     }
 
-    pub fn get_mod_author(&self) -> &str {
-        &from_ascii_array(&self.pkg_header.mod_author)
+    pub fn get_mod_author(&self) -> String {
+        from_ascii_array(&self.pkg_header.mod_author)
     }
 
-    pub fn get_mod_version(&self) -> &str {
-        &from_ascii_array(&self.pkg_header.mod_version.into())
+    pub fn get_mod_version(&self) -> String {
+        from_ascii_array(&self.pkg_header.mod_version.into())
     }
 
     fn add_file(&mut self, path: impl AsRef<Path>, file_type: PackageMemberType) -> Result<()> {
@@ -105,25 +105,28 @@ impl ModArchive {
                 self.pkg_members
                     .iter()
                     .filter(|(header, _)| header.file_type == file_type)
-                    .cloned(),
+                    .map(|val| (val.0.clone(), val.1))
+                    .collect::<Vec<(PackageMemberHeader, u64)>>()
+                    .clone(),
             ),
         }
     }
 
-    pub fn get_file(&self, queue: &mut FileQueue) -> Result<Option<(String, &[u8])>> {
+    pub fn get_file(&self, queue: &mut FileQueue) -> Result<Option<(String, Vec<u8>)>> {
         match queue.deque() {
             None => Ok(None),
             Some(header) => {
                 let reader = PackageReader::new(self.pkg_path.clone());
-                let (_, contents_compressed) = &reader.read_member_contents(vec![header])?[0];
+                let (_, contents_compressed) =
+                    &reader.read_member_contents(vec![header.clone()])?[0];
 
                 let mut contents_decompressed: Vec<u8> = Vec::new();
                 GzDecoder::new(contents_compressed.as_slice())
                     .read_to_end(&mut contents_decompressed)?;
 
                 Ok(Some((
-                    header.0.file_name.into(),
-                    contents_decompressed.as_slice(),
+                    from_ascii_array(&header.0.file_name),
+                    contents_decompressed,
                 )))
             }
         }
@@ -133,6 +136,6 @@ impl ModArchive {
         self.pkg_members.clear();
         let pkg_writer = PackageWriter::new(self.pkg_path.clone());
 
-        pkg_writer.write(&self.pkg_header, &[])
+        pkg_writer.write(&self.pkg_header, &Vec::new())
     }
 }
