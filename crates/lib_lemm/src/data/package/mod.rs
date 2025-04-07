@@ -9,9 +9,7 @@ pub use package_file_type::PackageFileType;
 
 use anyhow::anyhow;
 use anyhow::Result;
-use ascii::AsciiStr;
 use ascii::AsciiString;
-use ascii::IntoAsciiString;
 use std::fs::File;
 use std::io::Read;
 use std::io::Seek;
@@ -130,7 +128,7 @@ impl Package {
                 let mut file = File::open(path)?;
                 let end = file.metadata()?.len();
 
-                let mut pos: u64 = 0;
+                let pos: u64 = 0;
                 file.seek(SeekFrom::Start(28))?;
                 while file.stream_position()? < end {
                     let mut f_type: [u8; 1] = [0; 1];
