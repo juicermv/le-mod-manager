@@ -10,7 +10,11 @@ pub enum Route {
     #[layout(Navbar)]
     #[transition(SlideUp)]
     #[route("/")]
-    Home {},
+    Install {},
+
+    #[transition(SlideUp)]
+    #[route("/create")]
+    Create {},
 
     #[transition(SlideUp)]
     #[route("/settings")]
@@ -25,11 +29,12 @@ impl Route {
     pub fn get_name(&self) -> String {
         use Route::*;
 
-        return match self {
-            Home {} => "Home",
+        match self {
+            Create {} => "Create",
+            Install {} => "Install",
             Settings {} => "Settings",
             NotFound { segments } => "404",
         }
-        .into();
+        .into()
     }
 }

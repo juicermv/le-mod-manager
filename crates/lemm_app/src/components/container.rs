@@ -4,29 +4,28 @@ use crate::data::{ComponentSizing, Padding, StepUnit};
 
 #[component]
 pub fn Container(
+    style: Option<String>,
+    class: Option<String>,
     padding: Option<Padding>,
     size: Option<ComponentSizing>,
     children: Element,
 ) -> Element {
-    let realSize: ComponentSizing = match size {
-        None => ComponentSizing::Fluid,
-        Some(s) => s,
-    };
-
-    let realPadding: Padding = match padding {
-        None => Padding::all(StepUnit::Positive { value: 2 }),
-        Some(p) => p,
-    };
+    let realSize: ComponentSizing = size.unwrap_or_else(|| ComponentSizing::Fluid);
+    let realPadding: Padding =
+        padding.unwrap_or_else(|| Padding::all(StepUnit::Positive { value: 2 }));
 
     let class: String = match realSize {
-        _ => "container-".to_string() + &realSize.to_string(),
         ComponentSizing::None => "container".into(),
+        _ => "container-".to_string() + &realSize.to_string(),
     } + " "
-        + &realPadding.to_classes();
+        + &realPadding.to_classes()
+        + " "
+        + &class.unwrap_or_default();
 
     rsx! {
         div {
             class,
+            style,
             { children }
         }
     }

@@ -33,9 +33,9 @@ mod tests {
     fn pkg_string_test() -> Result<()> {
         let writer = PackageWriter::new("./hello.lemm".into());
         let header = PackageHeader {
-            mod_name: to_ascii_array("An LE mod"),
-            mod_author: to_ascii_array("The Lord"),
-            mod_version: to_ascii_array("1.21"),
+            mod_name: to_ascii_array("Textures Mod"),
+            mod_author: to_ascii_array("An Author"),
+            mod_version: to_ascii_array("1.93"),
         };
 
         let files: Vec<(PackageMemberHeader, Vec<u8>)> = vec![

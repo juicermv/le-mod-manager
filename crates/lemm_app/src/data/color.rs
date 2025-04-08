@@ -28,4 +28,7 @@ pub enum ButtonColor {
 
     #[strum(serialize = "link")]
     Link,
+
+    #[strum(serialize = "outline-{0}")]
+    Outline(Box<ButtonColor>)
 }

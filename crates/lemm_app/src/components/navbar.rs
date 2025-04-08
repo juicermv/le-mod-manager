@@ -10,7 +10,7 @@ pub fn Navbar() -> Element {
 
     rsx! {
         nav {
-            class: "navbar navbar-expand bg-body-tertiary",
+            class: "sticky-top navbar navbar-expand bg-body-tertiary",
             div {
                 class: "container-fluid" ,
                 a {

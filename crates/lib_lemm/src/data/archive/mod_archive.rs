@@ -11,6 +11,8 @@ use std::fs::File;
 use std::io::Read;
 use std::path::{Path, PathBuf};
 
+
+#[derive(Debug, Clone, PartialEq)]
 pub struct ModArchive {
     pkg_header: PackageHeader,
     pkg_members: Vec<(PackageMemberHeader, u64)>,

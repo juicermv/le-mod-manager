@@ -83,6 +83,8 @@ impl PackageWriter {
                     file.write_all(&member_raw.f_content)?;
                 }
 
+                drop(file);
+
                 Ok(positions)
             }
         }
