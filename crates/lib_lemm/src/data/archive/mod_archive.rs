@@ -11,7 +11,6 @@ use std::fs::File;
 use std::io::Read;
 use std::path::{Path, PathBuf};
 
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct ModArchive {
     pkg_header: PackageHeader,
@@ -137,5 +136,9 @@ impl ModArchive {
         let pkg_writer = PackageWriter::new(self.pkg_path.clone());
 
         pkg_writer.write(&self.pkg_header, &Vec::new())
+    }
+
+    pub fn get_header(&self) -> &PackageHeader {
+        &self.pkg_header
     }
 }

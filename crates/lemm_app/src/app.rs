@@ -1,16 +1,16 @@
 use crate::{data::AppState, route::Route};
 use dioxus::prelude::*;
 use lib_lemm::data::{to_ascii_array, PackageHeader};
-use crate::pages::install_state::InstallState;
+use crate::components::ToastArea;
+use crate::pages::{DS2State, SettingsState, ToastManager};
 
 #[component]
 pub fn App() -> Element {
     // Create state
-    use_context_provider(|| AppState {
-        filepath: Signal::new("".into()),
-    });
-
-    let mut ctx = use_context_provider(|| InstallState::new());
+    use_context_provider(|| DS2State::read());
+    use_context_provider(|| SettingsState::read());
+    let toast_manager = use_context_provider(|| ToastManager::new());
+    let toasts = toast_manager.toasts;
 
     rsx! {
         document::Link {
@@ -33,6 +33,11 @@ pub fn App() -> Element {
 
         document::Script {
             src: asset!("assets/update_theme.js")
+        }
+
+        ToastArea {
+            toasts: toasts(),
+            on_remove: move |id| use_context::<ToastManager>().remove(id)
         }
 
         Router::<Route> { }

@@ -8,19 +8,23 @@ use crate::pages::*;
 #[derive(Routable, Clone, PartialEq, EnumIter, MotionTransitions)]
 pub enum Route {
     #[layout(Navbar)]
-    #[transition(SlideUp)]
+    #[transition(Fade)]
     #[route("/")]
-    Install {},
+    Home {},
 
-    #[transition(SlideUp)]
+    #[transition(Fade)]
+    #[route("/ds2")]
+    DS2 {},
+
+    #[transition(Fade)]
     #[route("/create")]
     Create {},
 
-    #[transition(SlideUp)]
+    #[transition(Fade)]
     #[route("/settings")]
     Settings {},
 
-    #[transition(SlideUp)]
+    #[transition(Fade)]
     #[route("/:..segments")]
     NotFound { segments: Vec<String> },
 }
@@ -30,8 +34,9 @@ impl Route {
         use Route::*;
 
         match self {
+            Home {} => "Home",
             Create {} => "Create",
-            Install {} => "Install",
+            DS2 {} => "Dark Souls II",
             Settings {} => "Settings",
             NotFound { segments } => "404",
         }
