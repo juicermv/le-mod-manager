@@ -40,7 +40,8 @@ pub fn Settings() -> Element {
                     onclick: move |_| async move {
                         use_context::<SettingsState>().write().await;
                     },
-                    disabled: { !ds2_path_valid() && !has_saved() },
+
+                    disabled: { !ds2_path_valid() },
                     "Save"
                     i {
                         class: "bi bi-floppy ms-2",

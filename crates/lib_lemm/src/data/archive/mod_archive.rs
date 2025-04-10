@@ -1,4 +1,5 @@
 use crate::data::archive::file_queue::FileQueue;
+use crate::data::package::PackageMemberRef;
 use crate::data::{
     from_ascii_array, to_ascii_array, PackageHeader, PackageMemberHeader, PackageMemberType,
     PackageReader, PackageWriter,
@@ -109,6 +110,40 @@ impl ModArchive {
                     .clone(),
             ),
         }
+    }
+
+    pub fn get_refs(&self) -> Vec<PackageMemberRef> {
+        self.pkg_members
+            .iter()
+            .map(|(header, _)| PackageMemberRef {
+                name: from_ascii_array(&header.file_name),
+                package_member_type: header.file_type.clone(),
+            })
+            .collect()
+    }
+
+    pub fn read_file_from_ref(&self, file_ref: &PackageMemberRef) -> Result<Option<Vec<u8>>> {
+        let filtered_list = self
+            .pkg_members
+            .iter()
+            .filter(|(header, _)| {
+                header.file_type == file_ref.package_member_type
+                    && from_ascii_array(&header.file_name) == file_ref.name
+            })
+            .collect::<Vec<&(PackageMemberHeader, u64)>>();
+
+        if filtered_list.is_empty() {
+            return Ok(None);
+        }
+
+        let header = filtered_list[0].clone();
+        let reader = PackageReader::new(self.pkg_path.clone());
+        let (_, contents_compressed) = &reader.read_member_contents(vec![header.clone()])?[0];
+
+        let mut contents_decompressed: Vec<u8> = Vec::new();
+        GzDecoder::new(contents_compressed.as_slice()).read_to_end(&mut contents_decompressed)?;
+
+        Ok(Some(contents_decompressed))
     }
 
     pub fn get_file(&self, queue: &mut FileQueue) -> Result<Option<(String, Vec<u8>)>> {

@@ -66,7 +66,10 @@ pub fn DS2() -> Element {
 
                             Button {
                                 color: ButtonColor::Success,
-                                onclick: |_| use_context::<DS2State>().write(),
+                                onclick: |_| {
+                                    use_context::<DS2State>().write();
+                                    use_context::<DS2State>().install();
+                                },
                                 disabled: load_order.is_empty(),
                                 "Save list & apply to game..."
                                 i {

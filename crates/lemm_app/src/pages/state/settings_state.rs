@@ -4,7 +4,9 @@ use directories::UserDirs;
 use serde::{Deserialize, Deserializer, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
+use dioxus::hooks::use_context;
 use toml::Table;
+use crate::pages::{ToastManager, ToastType};
 
 #[derive(PartialEq, Clone, Default)]
 pub struct SettingsState {
@@ -56,6 +58,10 @@ impl SettingsState {
             Err(_) => {
                 self.ds2_path.set(path);
                 self.ds2_path_valid.set(false);
+                use_context::<ToastManager>().add(
+                    "Invalid DS2 path. Please select the correct folder.".into(),
+                    ToastType::Error,
+                );
             }
 
             Ok(path_buf) => {
@@ -89,6 +95,10 @@ impl SettingsState {
                 } else {
                     self.ds2_path.set(path);
                     self.ds2_path_valid.set(false);
+                    use_context::<ToastManager>().add(
+                        "Invalid DS2 path. Please select the correct folder.".into(),
+                        ToastType::Error,
+                    );
                 }
             }
         }
@@ -111,7 +121,13 @@ impl SettingsState {
     pub async fn write(&mut self) {
         if self.ds2_path_valid.read().clone() {
             match get_lemm_docs_dir() {
-                Err(_) => {}
+                Err(e) => {
+                    println!("Error getting documents directory: {}", e);
+                    use_context::<ToastManager>().add(
+                        format!("Error getting documents directory: {}", e),
+                        ToastType::Error,
+                    );
+                }
                 Ok(path) => {
                     let file_path = path.join("settings.toml");
                     let mut settings = SettingsFile::default();
@@ -121,6 +137,10 @@ impl SettingsState {
                     let toml_string = toml::to_string_pretty(&settings).unwrap_or_default();
                     fs::write(file_path, toml_string).unwrap_or_default();
                     self.has_saved.set(true);
+                    use_context::<ToastManager>().add(
+                        "Settings saved!".into(),
+                        ToastType::Success,
+                    );
                 }
             }
         }

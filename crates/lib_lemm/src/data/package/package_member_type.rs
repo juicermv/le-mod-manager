@@ -1,6 +1,6 @@
 use anyhow::anyhow;
 
-#[derive(Debug, Clone, PartialEq, Default)]
+#[derive(Debug, Clone, PartialEq, Default, Eq, Hash)]
 pub enum PackageMemberType {
     #[default]
     TEXTURE,

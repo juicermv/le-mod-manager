@@ -25,11 +25,11 @@ pub enum ComponentSizing {
 
 #[derive(Display, Clone, PartialEq)]
 pub enum StepUnit{
-    #[strum(serialize = "n{value}")]
-    Negative { value: u8 },
+    #[strum(serialize = "n{0}")]
+    Negative(u8),
 
-    #[strum(serialize = "{value}")]
-    Positive { value: u8 },
+    #[strum(serialize = "{0}")]
+    Positive(u8),
 
     #[strum(serialize = "auto")]
     Auto,
@@ -37,6 +37,6 @@ pub enum StepUnit{
 
 impl Default for StepUnit {
     fn default() -> Self {
-        StepUnit::Positive { value: 0 }
+        StepUnit::Positive(0)
     }
 }
