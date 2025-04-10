@@ -12,7 +12,7 @@ pub enum ToastType {
     #[strum(serialize = "text-bg-warning")]
     Warning,
 
-    #[strum(serialize = "text-bg-error")]
+    #[strum(serialize = "text-bg-danger")]
     Error,
 }
 

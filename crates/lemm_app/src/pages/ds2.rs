@@ -66,17 +66,7 @@ pub fn DS2() -> Element {
 
                             Button {
                                 color: ButtonColor::Success,
-                                onclick: |_| {
-                                    match use_context::<DS2State>().write() {
-                                        Ok(_) => {
-                                            use_context::<ToastManager>().add("Mod list saved!".into(), ToastType::Success);
-                                            // TODO start install
-                                        }
-                                        Err(e) => {
-                                            println!("Error writing load order: {}", e);
-                                        }
-                                    }
-                                },
+                                onclick: |_| use_context::<DS2State>().write(),
                                 disabled: load_order.is_empty(),
                                 "Save list & apply to game..."
                                 i {

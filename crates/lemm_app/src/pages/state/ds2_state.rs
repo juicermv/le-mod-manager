@@ -7,6 +7,7 @@ use std::collections::HashMap;
 use std::fs;
 use serde::{Deserialize, Serialize};
 use anyhow::Result;
+use crate::pages::{ToastManager, ToastType};
 
 #[derive(PartialEq, Clone)]
 pub struct DS2State {
@@ -107,7 +108,7 @@ impl DS2State {
         self.enabled_mods.set(map);
     }
 
-    pub fn write(&self) -> Result<()>{
+    fn write_internal(&self) -> Result<()>{
         let path = get_lemm_docs_dir()?;
         let file_path = path.join("ds2.toml");
         let load_order = self.load_order.read().clone();
@@ -133,6 +134,19 @@ impl DS2State {
             Err(e) => {
                 println!("Error writing to file: {}", e);
                 Err(e.into())
+            }
+        }
+    }
+
+    pub fn write(&self) {
+        match self.write_internal() {
+            Ok(_) => {
+                use_context::<ToastManager>().add("Mod list saved!".into(), ToastType::Success);
+                // TODO start install
+            }
+            Err(e) => {
+                use_context::<ToastManager>().add(format!("Error writing load order: {}", e), ToastType::Error);
+                println!("Error writing load order: {}", e);
             }
         }
     }
