@@ -1,5 +1,5 @@
 use crate::components::{Button, DirectoryInput};
-use crate::data::ButtonColor;
+use crate::data::{ButtonColor, Padding, StepUnit};
 use crate::{components::Container, data::AppState, pages::state::SettingsState};
 use dioxus::prelude::*;
 
@@ -11,6 +11,8 @@ pub fn Settings() -> Element {
     let has_saved = state.has_saved;
     rsx! {
         Container {
+            padding: Padding::all(StepUnit::Positive(3)),
+
             h2 { "Settings" }
             Container {
                 DirectoryInput {

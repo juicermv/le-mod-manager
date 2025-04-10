@@ -12,7 +12,7 @@ pub fn Container(
 ) -> Element {
     let realSize: ComponentSizing = size.unwrap_or_else(|| ComponentSizing::Fluid);
     let realPadding: Padding =
-        padding.unwrap_or_else(|| Padding::all(StepUnit::Positive(0)));
+        padding.unwrap_or_else(|| Padding::all(StepUnit::Positive(2)));
 
     let class: String = match realSize {
         ComponentSizing::None => "container".into(),

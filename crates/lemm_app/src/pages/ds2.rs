@@ -53,8 +53,9 @@ pub fn DS2() -> Element {
                         }
 
                         div {
-                            class: "d-flex gap-2",
+                            class: "d-flex gap-2 flex-wrap",
                             Button {
+                                class: "flex-fill",
                                 onclick: move |_| async move {
                                     use_context::<DS2State>().pick_archives().await;
                                 },
@@ -64,21 +65,38 @@ pub fn DS2() -> Element {
                                 }
                             }
 
+
                             Button {
+                                class: "flex-fill",
+                                color: ButtonColor::Primary,
+                                onclick: |_| {
+                                    use_context::<DS2State>().write();
+                                },
+                                disabled: load_order.is_empty(),
+                                "Save list..."
+                                i {
+                                    class: "bi bi-floppy ms-2",
+                                }
+                            }
+
+                            Button {
+                                class: "flex-fill",
                                 color: ButtonColor::Success,
                                 onclick: |_| {
                                     use_context::<DS2State>().write();
                                     use_context::<DS2State>().install();
                                 },
                                 disabled: load_order.is_empty(),
-                                "Save list & apply to game..."
+                                "Save & apply to game..."
                                 i {
-                                    class: "bi bi bi-stars ms-2",
+                                    class: "bi bi-stars ms-2",
                                 }
                             }
                         }
                     }
                 }
+                br {}
+                br {}
             }
 
             div {

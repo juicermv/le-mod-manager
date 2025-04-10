@@ -3,16 +3,9 @@ use strum_macros::Display;
 
 #[derive(Display, Debug, Clone, PartialEq, Eq)]
 pub enum ToastType {
-    #[strum(serialize = "text-bg-info")]
     Info,
-
-    #[strum(serialize = "text-bg-success")]
     Success,
-
-    #[strum(serialize = "text-bg-warning")]
     Warning,
-
-    #[strum(serialize = "text-bg-danger")]
     Error,
 }
 
