@@ -17,34 +17,25 @@ pub fn DS2() -> Element {
     let mod_options = state.enabled_mods;
 
     rsx! {
-        Container {
-            class: "d-flex h-100 position-fixed",
-            div {
-                class: "p-2 overflow-y-scroll",
-                width: "40%",
-                div {
-                    class: "card",
+        Container { class: "d-flex h-100 position-fixed",
+            div { class: "p-2 overflow-y-auto", width: "40%",
+                div { class: "card",
                     img {
                         class: "card-img-top",
                         src: IMG,
                         alt: "Dark Souls II's Majula",
                     }
 
-                    div {
-                        class: "card-body",
-                        div {
-                            class: "card-title",
+                    div { class: "card-body",
+                        div { class: "card-title",
                             h2 { "Manage Your DS2LE Mods" }
                         }
 
-                        div {
-                            class: "card-text",
+                        div { class: "card-text",
                             p {
                                 "This is the DS2 Lighting engine page. You can manage your DS2LE mods here."
                             }
-                            p {
-                                "Mods will be installed in the order they are listed (top to bottom)."
-                            }
+                            p { "Mods will be installed in the order they are listed (top to bottom)." }
                             p {
                                 "This means that the first mod in the list (top) will be installed first,
                                 and anything that comes after it will be installed after it, overwriting any
@@ -52,17 +43,14 @@ pub fn DS2() -> Element {
                             }
                         }
 
-                        div {
-                            class: "d-flex gap-2 flex-wrap",
+                        div { class: "d-flex gap-2 flex-wrap",
                             Button {
                                 class: "flex-fill",
                                 onclick: move |_| async move {
                                     use_context::<DS2State>().pick_archives().await;
                                 },
                                 "Add to list..."
-                                i {
-                                    class: "bi bi-box-arrow-up-right ms-2",
-                                }
+                                i { class: "bi bi-box-arrow-up-right ms-2" }
                             }
 
 
@@ -74,9 +62,7 @@ pub fn DS2() -> Element {
                                 },
                                 disabled: load_order.is_empty(),
                                 "Save list..."
-                                i {
-                                    class: "bi bi-floppy ms-2",
-                                }
+                                i { class: "bi bi-floppy ms-2" }
                             }
 
                             Button {
@@ -88,9 +74,7 @@ pub fn DS2() -> Element {
                                 },
                                 disabled: load_order.is_empty(),
                                 "Save & apply to game..."
-                                i {
-                                    class: "bi bi-stars ms-2",
-                                }
+                                i { class: "bi bi-stars ms-2" }
                             }
                         }
                     }
@@ -100,10 +84,9 @@ pub fn DS2() -> Element {
             }
 
             div {
-                class: "overflow-y-scroll d-flex h-100 flex-column gap-3 p-2",
+                class: "overflow-y-auto d-flex h-100 flex-column gap-3 p-2",
                 width: "60%",
-                for (index, item) in load_order.iter().enumerate()
-                {
+                for (index , item) in load_order.iter().enumerate() {
                     ModListItem {
                         key: "mod_{index}",
                         index: index as u32,
