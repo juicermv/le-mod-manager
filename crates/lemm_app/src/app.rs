@@ -2,16 +2,19 @@ use crate::{data::AppState, route::Route};
 use dioxus::prelude::*;
 use lib_lemm::data::{to_ascii_array, PackageHeader};
 use crate::components::ToastArea;
-use crate::pages::{DS2State, SettingsState, ToastManager};
+use crate::pages::{CreateState, DS2State, SettingsState, ToastManager};
 
 #[component]
 pub fn App() -> Element {
     // Create state
-    use_context_provider(|| DS2State::read());
-    use_context_provider(|| SettingsState::read());
-    let toast_manager = use_context_provider(|| ToastManager::new());
+    use_context_provider(DS2State::read);
+    use_context_provider(SettingsState::read);
+    use_context_provider(CreateState::new);
+    let toast_manager = use_context_provider(ToastManager::new);
     let toasts = toast_manager.toasts;
 
+    const THEME_SCRIPT: Asset = asset!("assets/update_theme.js");
+    
     rsx! {
         document::Link {
             href: "https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css",
@@ -32,7 +35,7 @@ pub fn App() -> Element {
         }
 
         document::Script {
-            src: asset!("assets/update_theme.js")
+            src: THEME_SCRIPT,
         }
 
         ToastArea {

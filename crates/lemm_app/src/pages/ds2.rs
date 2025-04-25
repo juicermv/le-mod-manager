@@ -8,13 +8,13 @@ use dioxus::html::link::disabled;
 use dioxus::prelude::*;
 use lib_lemm::data::{to_ascii_array, PackageHeader};
 
-static IMG: Asset = asset!("assets/ds2.jpg");
-
 #[component]
 pub fn DS2() -> Element {
-    let mut state = use_context::<DS2State>();
+    let state = use_context::<DS2State>();
     let load_order = state.load_order;
     let mod_options = state.enabled_mods;
+
+    const IMG: Asset = asset!("assets/ds2.jpg");
 
     rsx! {
         Container { class: "d-flex h-100 position-fixed",

@@ -1,5 +1,5 @@
 use dioxus::prelude::*;
-use dioxus_motion::transitions::page_transitions::AnimatedOutlet;
+//use dioxus_motion::transitions::page_transitions::AnimatedOutlet;
 use strum::IntoEnumIterator;
 
 use crate::route::Route;
@@ -15,8 +15,11 @@ pub fn Navbar() -> Element {
                 class: "container-fluid" ,
                 a {
                     href: "#",
-                    class: "navbar-brand",
-                    "LE Mod Manager"
+                    class: "navbar-brand position-relative",
+                    i {
+                        class: "bi bi-cone-striped me-2 text-warning"
+                    }
+                    "LE Mod Manager (Preview)"
                 }
                 div {
                     class: "collapse navbar-collapse",
@@ -25,7 +28,7 @@ pub fn Navbar() -> Element {
                         for route in Route::iter() {
                             {
                                 match route {
-                                    Route::NotFound { segments } => {
+                                    Route::NotFound { segments: _ } => {
                                         rsx!()
                                     }
                                     _ => {
@@ -54,6 +57,6 @@ pub fn Navbar() -> Element {
             }
         }
 
-        AnimatedOutlet::<Route> {}
+        Outlet::<Route> {}
     }
 }

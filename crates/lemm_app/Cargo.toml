@@ -7,25 +7,25 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-dioxus = { version = "0.6.0", features = ["router"] }
-dioxus-motion = {version="0.3.1", default-features = false }
+dioxus = { version = "0.6.3", features = ["router"] }
 rfd = "0.15.3"
 strum = { version = "0.27.1" }
 strum_macros = "0.27.1"
 lib_lemm = { path = "../lib_lemm" }
-rand = "0.9.0"
+rand = "0.9.1"
 dunce = "1.0.5"
 serde = "1.0.219"
 toml = "0.8.20"
 directories = "6.0.0"
-anyhow = "1.0.97"
+anyhow = "1.0.98"
+async-std = "1.13.1"
 
 [features]
 default = ["desktop"]
 desktop = [
     "dioxus/desktop",
-    "dioxus-motion/desktop",
-    "dioxus-motion/transitions",
+
+
 ]
 
 [profile]

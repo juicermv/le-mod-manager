@@ -31,7 +31,7 @@ pub fn DirectoryInput(
                 }
                 input {
                     type: "text",
-                    class: { "form-control ".to_string() + if !is_valid { "is-invalid" } else { "" } },
+                    class: "form-control ".to_string() + if !is_valid { "is-invalid" } else { "" },
                     value,
                     oninput: onchange,
                     aria_label: label.clone(),

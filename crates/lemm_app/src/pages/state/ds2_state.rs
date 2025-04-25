@@ -55,7 +55,7 @@ impl DS2State {
             return;
         };
 
-        if (index >= 0) && (index as usize) < size {
+        if (index != 0) && (index as usize) < size {
             let mut list = self.load_order.read().clone();
             let removed_val = &list.remove(index as usize);
             self.load_order.set(list);
@@ -122,8 +122,8 @@ impl DS2State {
                     let path = archive.get_path();
                     StoredLoadOrderItem {
                         path: path.to_str().unwrap_or_default().to_string(),
-                        uid: uid.clone(),
-                        enabled: enabled.clone(),
+                        uid: *uid,
+                        enabled: *enabled,
                     }
                 })
                 .collect(),
@@ -145,7 +145,6 @@ impl DS2State {
         match self.write_internal() {
             Ok(_) => {
                 use_context::<ToastManager>().add("Mod list saved!".into(), ToastType::Success);
-                // TODO start install
             }
             Err(e) => {
                 use_context::<ToastManager>()
@@ -204,15 +203,13 @@ impl DS2State {
 
     fn remove_mod_options(&mut self, rnd_id: u32) {
         let mut map = self.enabled_mods.read().clone();
-        match map.get(&rnd_id) {
-            Some(_) => {
-                map.remove(&rnd_id);
-                self.enabled_mods.set(map);
-            }
-            None => {}
+        if map.contains_key(&rnd_id) {
+            map.remove(&rnd_id);
+            self.enabled_mods.set(map);
         }
     }
 
+    // TODO: Add cfgpbr load order shit
     pub fn install(&mut self) {
         let ds2_path = match dunce::canonicalize(
             use_context::<SettingsState>().ds2_path.read().clone(),
@@ -266,7 +263,7 @@ impl DS2State {
                 })
                 .join(&file_ref.name);
 
-            let archive: ModArchive = load_order.get(index.clone()).unwrap().clone(); // This shouldn't really throw an error
+            let archive: ModArchive = load_order.get(*index).unwrap().clone(); // This shouldn't really throw an error
             match archive.read_file_from_ref(file_ref) {
                 Err(e) => {
                     use_context::<ToastManager>().add(
@@ -289,13 +286,9 @@ impl DS2State {
                                 .add(format!("Error creating directory: {}", e), ToastType::Error);
                         }
 
-                        Ok(_) => match fs::write(write_path, contents) {
-                            Err(e) => {
-                                use_context::<ToastManager>()
-                                    .add(format!("Error writing file: {}", e), ToastType::Error);
-                            }
-
-                            Ok(_) => {}
+                        Ok(_) => if let Err(e) = fs::write(write_path, contents) {
+                            use_context::<ToastManager>()
+                                .add(format!("Error writing file: {}", e), ToastType::Error);
                         },
                     },
                 },

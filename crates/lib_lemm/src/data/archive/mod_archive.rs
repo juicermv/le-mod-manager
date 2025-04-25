@@ -80,10 +80,10 @@ impl ModArchive {
     }
 
     pub fn get_mod_version(&self) -> String {
-        from_ascii_array(&self.pkg_header.mod_version.into())
+        from_ascii_array(&self.pkg_header.mod_version)
     }
 
-    fn add_file(&mut self, path: impl AsRef<Path>, file_type: PackageMemberType) -> Result<()> {
+    pub fn add_file(&mut self, path: impl AsRef<Path>, file_type: PackageMemberType) -> Result<()> {
         let file = File::open(&path)?;
         let mut compressed_file: Vec<u8> = Vec::new();
 
@@ -117,7 +117,7 @@ impl ModArchive {
             .iter()
             .map(|(header, _)| PackageMemberRef {
                 name: from_ascii_array(&header.file_name),
-                package_member_type: header.file_type.clone(),
+                package_member_type: header.file_type,
             })
             .collect()
     }

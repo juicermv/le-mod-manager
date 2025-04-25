@@ -1,30 +1,30 @@
 use dioxus::prelude::*;
-use dioxus_motion::prelude::*;
+//use dioxus_motion::prelude::*;
 use strum_macros::EnumIter;
 
 use crate::components::*;
 use crate::pages::*;
 
-#[derive(Routable, Clone, PartialEq, EnumIter, MotionTransitions)]
+#[derive(Routable, Clone, PartialEq, EnumIter)]
 pub enum Route {
     #[layout(Navbar)]
-    #[transition(Fade)]
+    //#[transition(Fade)]
     #[route("/")]
     Home {},
 
-    #[transition(Fade)]
+    //#[transition(Fade)]
     #[route("/ds2")]
     DS2 {},
 
-    #[transition(Fade)]
+    //#[transition(Fade)]
     #[route("/create")]
     Create {},
 
-    #[transition(Fade)]
+    //#[transition(Fade)]
     #[route("/settings")]
     Settings {},
 
-    #[transition(Fade)]
+    //#[transition(Fade)]
     #[route("/:..segments")]
     NotFound { segments: Vec<String> },
 }

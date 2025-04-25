@@ -10,7 +10,7 @@ pub fn Container(
     size: Option<ComponentSizing>,
     children: Element,
 ) -> Element {
-    let realSize: ComponentSizing = size.unwrap_or_else(|| ComponentSizing::Fluid);
+    let realSize: ComponentSizing = size.unwrap_or(ComponentSizing::Fluid);
     let realPadding: Padding =
         padding.unwrap_or_else(|| Padding::all(StepUnit::Positive(2)));
 
