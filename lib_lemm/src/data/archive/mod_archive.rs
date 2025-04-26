@@ -11,7 +11,6 @@ use std::collections::VecDeque;
 use std::fs::File;
 use std::io::Read;
 use std::path::{Path, PathBuf};
-use std::thread;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ModArchive {

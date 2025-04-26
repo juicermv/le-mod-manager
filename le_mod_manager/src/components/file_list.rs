@@ -1,4 +1,4 @@
-use crate::components::{Button, Container, FileListItem};
+use crate::components::{Button, FileListItem};
 use crate::data::ButtonColor;
 use dioxus::prelude::*;
 use lib_lemm::data::PackageMemberType;

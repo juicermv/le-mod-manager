@@ -1,12 +1,8 @@
 use crate::components::{Button, Container, ModListItem};
-use crate::data::{AppState, ButtonColor, ComponentSizing};
+use crate::data::ButtonColor;
 use crate::pages::state::DS2State;
-use crate::pages::{CreateState, ToastManager, ToastType};
-use dioxus::html::a::class;
-use dioxus::html::completions::CompleteWithBraces::{header, progress};
-use dioxus::html::link::disabled;
+use crate::pages::{ToastManager, ToastType};
 use dioxus::prelude::*;
-use lib_lemm::data::{to_ascii_array, PackageHeader};
 
 #[component]
 pub fn DS2() -> Element {

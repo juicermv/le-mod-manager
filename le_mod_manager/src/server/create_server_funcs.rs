@@ -1,5 +1,5 @@
 use dioxus::prelude::*;
-use lib_lemm::data::{ModArchive, PackageMemberType};
+
 use once_cell::sync::Lazy;
 use std::{
 	path::PathBuf,
@@ -13,7 +13,7 @@ static EXPORT_PROGRESS: Lazy<AtomicU64> = Lazy::new(|| AtomicU64::new(0));
 
 /// Call this on the client to kick off the export.
 /// It runs in the background, updating EXPORT_PROGRESS as it goes.
-#[server(ExportArchive)]
+#[server]
 pub async fn export_archive_server(
     files: Vec<(String, String)>,
     mod_name: String,
@@ -23,9 +23,10 @@ pub async fn export_archive_server(
 ) -> Result<(), ServerFnError> {
     // Reset progress
     EXPORT_PROGRESS.store(0, Ordering::SeqCst);
-
     // Do the blocking work on a blocking thread pool
     tokio::task::spawn_blocking(move || {
+        use lib_lemm::data::{ModArchive, PackageMemberType};
+        
         let out = PathBuf::from(output_path);
         match ModArchive::create(&out, mod_name, mod_author, mod_version) {
             Ok(archive) => {
@@ -60,7 +61,7 @@ pub async fn export_archive_server(
 }
 
 /// Simple polling endpoint the UI can call to get the latest percent.
-#[server(GetExportProgress)]
+#[server]
 pub async fn get_export_progress() -> Result<u64, ServerFnError> {
     Ok(EXPORT_PROGRESS.load(Ordering::SeqCst))
 }

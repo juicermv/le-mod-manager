@@ -1,11 +1,8 @@
 use crate::data::get_lemm_docs_dir;
 use dioxus::prelude::{Readable, Signal, Writable};
-use directories::UserDirs;
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Serialize};
 use std::fs;
-use std::path::{Path, PathBuf};
 use dioxus::hooks::use_context;
-use toml::Table;
 use crate::pages::{ToastManager, ToastType};
 
 #[derive(PartialEq, Clone, Default)]

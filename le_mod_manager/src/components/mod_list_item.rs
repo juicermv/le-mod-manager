@@ -1,7 +1,7 @@
 use crate::components::Button;
 use crate::data::ButtonColor;
 use dioxus::prelude::*;
-use lib_lemm::data::{from_ascii_array, ModArchive};
+use lib_lemm::data::ModArchive;
 
 
 #[derive(PartialEq, Props, Clone)]

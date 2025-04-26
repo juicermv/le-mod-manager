@@ -1,6 +1,6 @@
 use crate::components::{Button, DirectoryInput};
 use crate::data::{ButtonColor, Padding, StepUnit};
-use crate::{components::Container, data::AppState, pages::state::SettingsState};
+use crate::{components::Container, pages::state::SettingsState};
 use dioxus::prelude::*;
 
 #[component]
@@ -43,7 +43,7 @@ pub fn Settings() -> Element {
                         use_context::<SettingsState>().write().await;
                     },
 
-                    disabled: { !ds2_path_valid() },
+                    disabled: !ds2_path_valid(),
                     "Save"
                     i {
                         class: "bi bi-floppy ms-2",

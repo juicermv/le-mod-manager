@@ -14,7 +14,7 @@ use std::fs;
 // A global to hold install progress [0..100]
 static INSTALL_PROGRESS: Lazy<AtomicU64> = Lazy::new(|| AtomicU64::new(0));
 
-#[server(InstallMods)]
+#[server]
 pub async fn install_mods_server(
     archive_paths: Vec<String>,
     ds2_path: String,
@@ -76,7 +76,7 @@ pub async fn install_mods_server(
     .map_err(|e: JoinError| ServerFnError::new(e))?
 }
 
-#[server(GetInstallProgress)]
+#[server]
 pub async fn get_install_progress() -> Result<u64, ServerFnError> {
     Ok(INSTALL_PROGRESS.load(Ordering::SeqCst))
 }

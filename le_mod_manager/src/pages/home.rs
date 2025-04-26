@@ -1,11 +1,7 @@
 use dioxus::prelude::*;
-use rfd::AsyncFileDialog;
 
 use crate::data::{Padding, StepUnit};
-use crate::{
-    components::{Button, Container},
-    data::AppState,
-};
+use crate::components::Container;
 
 #[component]
 pub fn Home() -> Element {

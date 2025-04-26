@@ -1,13 +1,9 @@
-use crate::components::{Button, Container, FileList, FileListItem};
+use crate::components::{Button, Container, FileList};
 use crate::data::{ButtonColor, Padding, StepUnit};
 use crate::pages::{CreateState, ToastManager, ToastType};
-use dioxus::html::a::class;
 use dioxus::prelude::*;
-use directories::UserDirs;
 use lib_lemm::data::PackageMemberType;
 use std::path::PathBuf;
-use async_std::prelude::FutureExt;
-use dioxus::html::ol::start;
 
 #[component]
 pub fn Create() -> Element {

@@ -38,7 +38,7 @@ impl Route {
             Create {} => "Create",
             DS2 {} => "Dark Souls II",
             Settings {} => "Settings",
-            NotFound { segments } => "404",
+            NotFound { segments: _ } => "404",
         }
         .into()
     }
