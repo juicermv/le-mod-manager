@@ -41,10 +41,10 @@ jobs:
               uses: actions/upload-artifact@v4
               with:
                   name: Installer MSI (Release)
-                  path: 'crates/le_mod_manager/dist/*.msi'
+                  path: 'le_mod_manager/dist/*.msi'
 
             - name: Upload Installer EXE (Release)
               uses: actions/upload-artifact@v4
               with:
                   name: Installer EXE (Release)
-                  path: 'crates/le_mod_manager/dist/*-setup.exe'
+                  path: 'le_mod_manager/dist/*-setup.exe'
