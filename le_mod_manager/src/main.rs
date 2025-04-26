@@ -19,5 +19,5 @@ fn main() {
         .with_resizable(true);
     let cfg = Config::new().with_menu(None).with_window(window);
 
-    LaunchBuilder::desktop().with_cfg(cfg).launch(App);
+    LaunchBuilder::new().with_cfg(cfg).launch(App);
 }
