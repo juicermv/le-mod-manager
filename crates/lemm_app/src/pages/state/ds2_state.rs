@@ -55,7 +55,7 @@ impl DS2State {
             return;
         };
 
-        if (index != 0) && (index as usize) < size {
+        if (index as usize) < size {
             let mut list = self.load_order.read().clone();
             let removed_val = &list.remove(index as usize);
             self.load_order.set(list);
@@ -238,8 +238,8 @@ impl DS2State {
             .read()
             .clone()
             .iter()
-            .filter(|(archive, uid)| enabled_mods.get(uid).unwrap_or(&true).clone())
-            .map(|(archive, uid)| archive.clone())
+            .filter(|(_archive, uid)| *enabled_mods.get(uid).unwrap_or(&true))
+            .map(|(archive, _uid)| archive.clone())
             .collect();
 
         // Gather files from archives

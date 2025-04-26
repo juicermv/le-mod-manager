@@ -1,11 +1,12 @@
 use crate::components::{Button, Container, FileList, FileListItem};
 use crate::data::{ButtonColor, Padding, StepUnit};
-use crate::pages::CreateState;
+use crate::pages::{CreateState, ToastManager, ToastType};
 use dioxus::html::a::class;
 use dioxus::prelude::*;
 use directories::UserDirs;
 use lib_lemm::data::PackageMemberType;
 use std::path::PathBuf;
+use async_std::prelude::FutureExt;
 use dioxus::html::ol::start;
 
 #[component]
@@ -39,8 +40,16 @@ pub fn Create() -> Element {
     let mod_name_empty = state.mod_name.read().clone().is_empty();
     let mod_version_empty = state.mod_version.read().clone().is_empty();
     let mod_author_empty = state.mod_author.read().clone().is_empty();
-    let progress = state.progress.read().clone();
+    let progress = *state.progress.read();
     let can_export: bool = (!files.is_empty()) && (!mod_author_empty) && (!mod_version_empty) && (!mod_name_empty);
+
+    use_effect(move || {
+        let p = *state.progress.read();
+        if p == Some(100u64) {
+            use_context::<CreateState>().progress.set(None);
+            use_context::<ToastManager>().add("Mod archive written successfully!".to_string(), ToastType::Success);
+        }
+    });
 
 
     rsx! {
@@ -121,10 +130,10 @@ pub fn Create() -> Element {
 
                     Button {
                         color: ButtonColor::Success,
-                        onclick: move |_| async move {
-                            use_context::<CreateState>().export_archive().await
+                        onclick: move |_| {
+                            use_context::<CreateState>().export_archive()
                         },
-                        disabled: !can_export,
+                        disabled: !can_export || *state.exporting.read(),
                         i {
                             class: "me-2 bi bi-box-seam"
                         }
@@ -138,7 +147,7 @@ pub fn Create() -> Element {
                             div {
                                 class: "progress-bar progress-bar-striped progress-bar-animated",
                                 style: "width: ".to_string() + progress.unwrap().to_string().as_str() + "%;",
-                               { "Writing...".to_string() + progress.unwrap().to_string().as_str() + "%;"}
+                               { "Writing... ".to_string() + progress.unwrap().to_string().as_str() + "%"}
                             }
                         }
                     }

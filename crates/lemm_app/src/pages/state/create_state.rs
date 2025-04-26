@@ -3,10 +3,10 @@ use lib_lemm::data::{ModArchive, PackageMemberType};
 use rfd::AsyncFileDialog;
 use std::collections::HashMap;
 use std::path::PathBuf;
-use std::thread::sleep;
-use std::time::Duration;
+use tokio::time::{sleep, Duration};
 use async_std::task;
 use crate::pages::{ToastManager, ToastType};
+use crate::server::{export_archive_server, get_export_progress};
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct CreateState {
@@ -16,7 +16,8 @@ pub struct CreateState {
     pub mod_author: Signal<String>,
     pub mod_version: Signal<String>,
 
-    pub progress: Signal<Option<u64>>
+    pub progress: Signal<Option<u64>>,
+    pub exporting: Signal<bool>
 }
 
 impl CreateState {
@@ -28,6 +29,7 @@ impl CreateState {
             mod_author: Signal::new(String::new()),
             mod_version: Signal::new(String::new()),
             progress: Signal::new(None),
+            exporting: Signal::new(false)
         }
     }
 
@@ -129,40 +131,54 @@ impl CreateState {
         self.files.set(files);
     }
 
-    pub async fn export_archive(&mut self) {
-        let dialog = AsyncFileDialog::new().set_title("Export your mod...").add_filter("Mod Archive", &["lemm"]);
-        let result = dialog.save_file().await;
-        if let Some(path) = result {
-            match ModArchive::create(path.path(), self.mod_name.read().clone(), self.mod_author.read().clone(), self.mod_version.read().clone()) {
-                Ok(mut archive) => {
-                    let files = self.files.read().clone();
-                    let total = files.len();
-                    let mut current = 0usize;
-                    for (path, f_type) in  files{
-                        self.progress.set(Some(
-                            ((current/total)*100) as u64
-                        ));
-                        match archive.add_file(path, f_type) { 
-                            Ok(_) => {
-                                current +=1;
-                            }
-                            
-                            Err(e) => {
-                                use_context::<ToastManager>().add(format!("Error writing file to archive! {e}"), ToastType::Error);
-                                return;
-                            }
-                        }
-                        
-                    }
+    pub fn export_archive(&mut self) {
+        let files: Vec<(String, String)> =
+            self.files
+                .read()
+                .clone()
+                .into_iter()
+                .map(|(p, t)| (p.to_string_lossy().into_owned(), t.into()))
+                .collect();
 
-                    use_context::<ToastManager>().add("Archive created successfully!".into(), ToastType::Success);
-                }
+        let name = self.mod_name.read().clone();
+        let author = self.mod_author.read().clone();
+        let version = self.mod_version.read().clone();
+        let mut progress = self.progress.clone();
+        let mut exporting = self.exporting.clone();
 
-                Err(e) => {
-                    use_context::<ToastManager>().add(format!("Could not create mod archive! {e}"), ToastType::Error);
-                }
+        // 1) kick off the export on the server
+        spawn(async move {
+            exporting.set(true);
+            // prompt the user for a path
+            if let Some(path) = crate::pages::select_export_path().await {
+                let output = path.to_string_lossy().into_owned();
+                let _ = export_archive_server(files, name, author, version, output).await;
             }
+            exporting.set(false);
+        });
 
+        // 2) poll the progress endpoint
+        spawn(async move {
+            while *exporting.read() {
+                if let Ok(pct) = get_export_progress().await {
+                    progress.set(Some(pct));
+                }
+                tokio::time::sleep(Duration::from_millis(100)).await;
+            }
+            // ensure 100% at the end
+            progress.set(Some(100));
+        });
+    }
+}
+
+pub async fn select_export_path() -> Option<PathBuf> {
+    match AsyncFileDialog::new().add_filter("LEMM Archive", &["lemm"]).set_title("Export your mod...").save_file().await {
+        Some(handle) => {
+            Some(PathBuf::from(handle.path()))
+        }
+
+        None => {
+            None
         }
     }
 }
