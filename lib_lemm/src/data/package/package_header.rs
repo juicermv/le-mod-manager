@@ -5,7 +5,7 @@ use crate::data::package::package_header_raw::PackageHeaderRaw;
 #[derive(Debug, Clone, PartialEq, Hash, Eq, Default)]
 pub struct PackageHeader {
     pub mod_name: [AsciiChar; 32],
-    pub mod_author: [AsciiChar; 10],
+    pub mod_author: [AsciiChar; 16],
     pub mod_version: [AsciiChar; 5],
 }
 

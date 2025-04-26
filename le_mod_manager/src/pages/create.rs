@@ -82,8 +82,8 @@ pub fn Create() -> Element {
                             placeholder: "Author",
                             type: "text",
                             name: "mod_author",
-                            maxlength: "10",
-                            size: "10",
+                            maxlength: "16",
+                            size: "16",
                             onchange: move |e| {
                                 use_context::<CreateState>().set_mod_author(e.value())
                             }
@@ -103,7 +103,7 @@ pub fn Create() -> Element {
                     }
                     div {
                         class: "form-text",
-                        "Each field has a limited number of characters it accepts. 32 for the Mod Name field, 10 for the Author field, and 5 for the Version field."
+                        "Each field has a limited number of characters it accepts. 32 for the Mod Name field, 16 for the Author field, and 5 for the Version field."
                     }
                 }
 

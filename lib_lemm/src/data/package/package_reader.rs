@@ -56,7 +56,7 @@ impl PackageReader {
             Ok(()) => {
                 let mut return_val: Vec<(PackageMemberHeader, u64)> = Vec::new();
                 let mut file = File::open(&self.path)?;
-                file.seek(SeekFrom::Start(50))?;
+                file.seek(SeekFrom::Start(56))?;
 
                 let end = file.metadata()?.len();
                 while file.stream_position()? < end {
