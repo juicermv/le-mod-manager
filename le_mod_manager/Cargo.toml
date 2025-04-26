@@ -1,5 +1,5 @@
 [package]
-name = "lemm_app"
+name = "le_mod_manager"
 version = "0.1.0"
 authors = ["juicermv <juicermv@icloud.com>"]
 edition = "2021"
@@ -11,7 +11,7 @@ dioxus = { version = "0.6.3", features = ["router", "fullstack"] }
 rfd = "0.15.3"
 strum = { version = "0.27.1" }
 strum_macros = "0.27.1"
-lib_lemm = { path = "../lib_lemm" }
+lib_lemm = { workspace = true }
 rand = "0.9.1"
 dunce = "1.0.5"
 serde = { version = "1.0.219", features = ["derive"] }
@@ -26,16 +26,3 @@ once_cell = "1.21.3"
 default = ["desktop"]
 desktop = ["dioxus/desktop"]
 server = ["dioxus/server"]
-bundle = []
-
-[profile]
-
-[profile.wasm-dev]
-inherits = "dev"
-opt-level = 1
-
-[profile.server-dev]
-inherits = "dev"
-
-[profile.android-dev]
-inherits = "dev"

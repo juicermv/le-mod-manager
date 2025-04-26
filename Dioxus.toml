@@ -1,9 +1,10 @@
 [application]
+name = "LE Mod Manager"
+out_dir = "dist"
 
 [web.app]
 
-# HTML title tag content
-title = "le_mod_manager"
+title = "LE Mod Manager"
 
 # include `assets` in web platform
 [web.resource]
@@ -23,7 +24,10 @@ script = []
 [bundle]
 identifier = "io.github.juicermv"
 publisher = "juicermv"
+version = "0.1.0"
+short_description = "A mod manager for Dark Souls Lighting Engine."
 
+# HTML title tag content
 [bundle.windows]
 tsp = true
 allow_downgrades = false

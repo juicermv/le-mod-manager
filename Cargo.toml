@@ -1,6 +1,9 @@
 [workspace]
 resolver = "2"
-members = ["crates/lemm_app", "crates/lib_lemm"]
+members = ["le_mod_manager", "lib_lemm"]
+
+[workspace.dependencies]
+lib_lemm = { path = "lib_lemm" }
 
 [profile.wasm-dev]
 inherits = "dev"

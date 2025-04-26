@@ -29,7 +29,7 @@ jobs:
               run: cargo binstall dioxus-cli
 
             - name: Build Release Bundle
-              run: dx bundle --package lemm_app --release
+              run: dx bundle --package le_mod_manager --release
 
             - name: Cache Build Output
               uses: actions/cache/save@v4
@@ -41,10 +41,10 @@ jobs:
               uses: actions/upload-artifact@v4
               with:
                   name: Installer MSI (Release)
-                  path: 'target/dx/lemm_app/bundle/windows/bundle/msi'
+                  path: 'crates/le_mod_manager/dist/*.msi'
 
             - name: Upload Installer EXE (Release)
               uses: actions/upload-artifact@v4
               with:
                   name: Installer EXE (Release)
-                  path: 'target/dx/lemm_app/bundle/windows/bundle/nsis'
+                  path: 'crates/le_mod_manager/dist/*-setup.exe'
