@@ -21,6 +21,8 @@ anyhow = "1.0.98"
 async-std = "1.13.1"
 tokio = { version = "1.44.2", features = ["rt", "time"] }
 once_cell = "1.21.3"
+serde_json = "1.0.140"
+flate2 = "1.1.1"
 
 [features]
 default = ["desktop"]

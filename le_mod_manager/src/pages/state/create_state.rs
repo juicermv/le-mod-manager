@@ -1,12 +1,16 @@
+use crate::pages::{ToastManager, ToastType};
+use crate::server::{export_archive_server, get_export_progress};
+use async_std::task;
+use dioxus::logger::tracing;
 use dioxus::prelude::*;
+use flate2::read::GzEncoder;
+use flate2::Compression;
 use lib_lemm::data::{ModArchive, PackageMemberType};
 use rfd::AsyncFileDialog;
 use std::collections::HashMap;
+use std::io::Read;
 use std::path::PathBuf;
 use tokio::time::{sleep, Duration};
-use async_std::task;
-use crate::pages::{ToastManager, ToastType};
-use crate::server::{export_archive_server, get_export_progress};
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct CreateState {
@@ -17,7 +21,7 @@ pub struct CreateState {
     pub mod_version: Signal<String>,
 
     pub progress: Signal<Option<u64>>,
-    pub exporting: Signal<bool>
+    pub exporting: Signal<bool>,
 }
 
 impl CreateState {
@@ -29,7 +33,7 @@ impl CreateState {
             mod_author: Signal::new(String::new()),
             mod_version: Signal::new(String::new()),
             progress: Signal::new(None),
-            exporting: Signal::new(false)
+            exporting: Signal::new(false),
         }
     }
 
@@ -51,28 +55,24 @@ impl CreateState {
             .set_title("Add files to mod archive...");
 
         let result = dialog.pick_files().await;
-        if let Some (files) = result {
+        if let Some(files) = result {
             let mut added_files = self.files.read().clone();
             let mut counter = 0;
 
             for file in files {
                 let f_type: PackageMemberType = match file.path().extension() {
-                    Some(ext) => {
-                        match ext.to_str() {
-                            Some(extension) => {
-                                match extension {
-                                    "pkg" => PackageMemberType::PKG,
-                                    "ini" => PackageMemberType::INI,
-                                    "dds" => PackageMemberType::TEXTURE,
-                                    "cfg" => PackageMemberType::CONFIG,
-                                    "cfgpbr" => PackageMemberType::CFGPBR,
-                                    _ => continue
-                                }
-                            }
+                    Some(ext) => match ext.to_str() {
+                        Some(extension) => match extension {
+                            "pkg" => PackageMemberType::PKG,
+                            "ini" => PackageMemberType::INI,
+                            "dds" => PackageMemberType::TEXTURE,
+                            "cfg" => PackageMemberType::CONFIG,
+                            "cfgpbr" => PackageMemberType::CFGPBR,
+                            _ => continue,
+                        },
 
-                            None => { continue }
-                        }
-                    }
+                        None => continue,
+                    },
 
                     None => {
                         continue;
@@ -84,7 +84,10 @@ impl CreateState {
             }
 
             self.files.set(added_files);
-            use_context::<ToastManager>().add(format!("Successfully added {counter} files!"), ToastType::Success);
+            use_context::<ToastManager>().add(
+                format!("Successfully added {counter} files!"),
+                ToastType::Success,
+            );
         }
     }
 
@@ -94,7 +97,7 @@ impl CreateState {
             .set_title("Add Engine Textures to mod archive...");
 
         let result = dialog.pick_files().await;
-        if let Some (files) = result {
+        if let Some(files) = result {
             let mut added_files = self.files.read().clone();
             let mut counter = 0;
 
@@ -104,13 +107,15 @@ impl CreateState {
             }
 
             self.files.set(added_files);
-            use_context::<ToastManager>().add(format!("Successfully added {counter} files!"), ToastType::Success);
+            use_context::<ToastManager>().add(
+                format!("Successfully added {counter} files!"),
+                ToastType::Success,
+            );
         }
     }
 
     pub async fn update_file_type(&mut self, item: &PathBuf, f_type: PackageMemberType) {
         let mut files = self.files.read().clone();
-
 
         self.files.set(HashMap::new());
         task::sleep(Duration::from_millis(50)).await; // Fix a small bug that is out of my control
@@ -132,18 +137,28 @@ impl CreateState {
     }
 
     async fn select_export_path() -> Option<PathBuf> {
-        AsyncFileDialog::new().add_filter("LEMM Archive", &["lemm"]).set_title("Export your mod...").save_file().await.map(|handle| PathBuf::from(handle.path()))
+        AsyncFileDialog::new()
+            .add_filter("LEMM Archive", &["lemm"])
+            .set_title("Export your mod...")
+            .save_file()
+            .await
+            .map(|handle| PathBuf::from(handle.path()))
     }
 
-
     pub fn export_archive(&mut self) {
-        let files: Vec<(String, String)> =
-            self.files
-                .read()
-                .clone()
-                .into_iter()
-                .map(|(p, t)| (p.to_string_lossy().into_owned(), t.into()))
-                .collect();
+        let files_vec: Vec<(String, String)> = self
+            .files
+            .read()
+            .clone()
+            .into_iter()
+            .map(|(p, t)| (p.to_string_lossy().into_owned(), t.into()))
+            .collect();
+
+        let data = serde_json::to_vec(&files_vec).unwrap();
+        let mut compressed_data: Vec<u8> = Vec::new();
+        GzEncoder::new(data.as_slice(), Compression::best())
+            .read_to_end(&mut compressed_data)
+            .unwrap();
 
         let name = self.mod_name.read().clone();
         let author = self.mod_author.read().clone();
@@ -157,7 +172,23 @@ impl CreateState {
             // prompt the user for a path
             if let Some(path) = Self::select_export_path().await {
                 let output = path.to_string_lossy().into_owned();
-                let _ = export_archive_server(files, name, author, version, output).await;
+                tracing::debug!("Exporting to {}", output);
+                match export_archive_server(compressed_data, name, author, version, output).await {
+                    Ok(_) => {
+                        use_context::<ToastManager>().add(
+                            "Mod archive written successfully!".to_string(),
+                            ToastType::Success,
+                        );
+                    }
+
+                    Err(e) => {
+                        tracing::error!("{}", e);
+                        /*use_context::<ToastManager>().add(
+                            format!("Error while creating archive: {:?}", e),
+                            ToastType::Success,
+                        );*/
+                    }
+                }
             }
             exporting.set(false);
         });
@@ -175,4 +206,3 @@ impl CreateState {
         });
     }
 }
-

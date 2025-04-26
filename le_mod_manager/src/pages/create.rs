@@ -47,7 +47,6 @@ pub fn Create() -> Element {
         let p = *state.progress.read();
         if p == Some(100u64) {
             use_context::<CreateState>().progress.set(None);
-            use_context::<ToastManager>().add("Mod archive written successfully!".to_string(), ToastType::Success);
         }
     });
 
