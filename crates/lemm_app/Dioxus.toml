@@ -23,3 +23,10 @@ script = []
 [bundle]
 identifier = "io.github.juicermv"
 publisher = "juicermv"
+
+[bundle.windows]
+tsp = true
+allow_downgrades = false
+
+[bundle.windows.webview_install_mode.OfflineInstaller]
+silent = true
