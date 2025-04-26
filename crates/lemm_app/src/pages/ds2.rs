@@ -1,9 +1,9 @@
 use crate::components::{Button, Container, ModListItem};
 use crate::data::{AppState, ButtonColor, ComponentSizing};
 use crate::pages::state::DS2State;
-use crate::pages::{ToastManager, ToastType};
+use crate::pages::{CreateState, ToastManager, ToastType};
 use dioxus::html::a::class;
-use dioxus::html::completions::CompleteWithBraces::header;
+use dioxus::html::completions::CompleteWithBraces::{header, progress};
 use dioxus::html::link::disabled;
 use dioxus::prelude::*;
 use lib_lemm::data::{to_ascii_array, PackageHeader};
@@ -13,6 +13,16 @@ pub fn DS2() -> Element {
     let state = use_context::<DS2State>();
     let load_order = state.load_order;
     let mod_options = state.enabled_mods;
+    let progress= *state.progress.read();
+    let is_installing = state.installing;
+
+    use_effect(move || {
+        let p = *state.progress.read();
+        if p == Some(100u64) {
+            use_context::<DS2State>().progress.set(None);
+            use_context::<ToastManager>().add("Data written successfully!".to_string(), ToastType::Success);
+        }
+    });
 
     const IMG: Asset = asset!("assets/ds2.jpg");
 
@@ -72,11 +82,23 @@ pub fn DS2() -> Element {
                                     use_context::<DS2State>().write();
                                     use_context::<DS2State>().install();
                                 },
-                                disabled: load_order.is_empty(),
+                                disabled: load_order.is_empty() || is_installing(),
                                 "Save & apply to game..."
                                 i { class: "bi bi-stars ms-2" }
                             }
                         }
+
+                        if progress.is_some() {
+                        div {
+                            class: "progress mt-3",
+                            role: "progressbar",
+                            div {
+                                class: "progress-bar progress-bar-striped progress-bar-animated",
+                                style: "width: ".to_string() + progress.unwrap().to_string().as_str() + "%;",
+                               { "Writing... ".to_string() + progress.unwrap().to_string().as_str() + "%"}
+                            }
+                        }
+                    }
                     }
                 }
                 br {}

@@ -131,6 +131,11 @@ impl CreateState {
         self.files.set(files);
     }
 
+    async fn select_export_path() -> Option<PathBuf> {
+        AsyncFileDialog::new().add_filter("LEMM Archive", &["lemm"]).set_title("Export your mod...").save_file().await.map(|handle| PathBuf::from(handle.path()))
+    }
+
+
     pub fn export_archive(&mut self) {
         let files: Vec<(String, String)> =
             self.files
@@ -143,14 +148,14 @@ impl CreateState {
         let name = self.mod_name.read().clone();
         let author = self.mod_author.read().clone();
         let version = self.mod_version.read().clone();
-        let mut progress = self.progress.clone();
-        let mut exporting = self.exporting.clone();
+        let mut progress = self.progress;
+        let mut exporting = self.exporting;
 
         // 1) kick off the export on the server
         spawn(async move {
             exporting.set(true);
             // prompt the user for a path
-            if let Some(path) = crate::pages::select_export_path().await {
+            if let Some(path) = Self::select_export_path().await {
                 let output = path.to_string_lossy().into_owned();
                 let _ = export_archive_server(files, name, author, version, output).await;
             }
@@ -171,14 +176,3 @@ impl CreateState {
     }
 }
 
-pub async fn select_export_path() -> Option<PathBuf> {
-    match AsyncFileDialog::new().add_filter("LEMM Archive", &["lemm"]).set_title("Export your mod...").save_file().await {
-        Some(handle) => {
-            Some(PathBuf::from(handle.path()))
-        }
-
-        None => {
-            None
-        }
-    }
-}

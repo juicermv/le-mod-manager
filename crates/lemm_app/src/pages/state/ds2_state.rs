@@ -1,21 +1,21 @@
-use crate::data::{get_lemm_docs_dir, ModOptions, StoredLoadOrder, StoredLoadOrderItem};
+use crate::data::{get_lemm_docs_dir, StoredLoadOrder, StoredLoadOrderItem};
 use crate::pages::{SettingsState, ToastManager, ToastType};
+use crate::server::{get_install_progress, install_mods_server};
 use anyhow::Result;
 use dioxus::prelude::*;
-use lib_lemm::data::{
-    ModArchive, PackageHeader, PackageMemberHeader, PackageMemberRef, PackageMemberType,
-};
+use lib_lemm::data::ModArchive;
 use rand::RngCore;
 use rfd::AsyncFileDialog;
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
-use std::path::PathBuf;
 
 #[derive(PartialEq, Clone)]
 pub struct DS2State {
     pub load_order: Signal<Vec<(ModArchive, u32)>>,
     pub enabled_mods: Signal<HashMap<u32, bool>>,
+
+    pub progress: Signal<Option<u64>>,
+    pub installing: Signal<bool>,
 }
 
 impl DS2State {
@@ -23,6 +23,8 @@ impl DS2State {
         Self {
             load_order: Signal::new(vec![]),
             enabled_mods: Signal::new(HashMap::new()),
+            progress: Signal::new(None),
+            installing: Signal::new(false),
         }
     }
 
@@ -184,6 +186,8 @@ impl DS2State {
                                 return Self {
                                     load_order: Signal::new(list),
                                     enabled_mods: Signal::new(map),
+                                    progress: Default::default(),
+                                    installing: Default::default(),
                                 };
                             }
                             Err(e) => {
@@ -209,7 +213,6 @@ impl DS2State {
         }
     }
 
-    // TODO: Add cfgpbr load order shit
     pub fn install(&mut self) {
         let ds2_path = match dunce::canonicalize(
             use_context::<SettingsState>().ds2_path.read().clone(),
@@ -219,7 +222,7 @@ impl DS2State {
                     path
                 } else {
                     use_context::<ToastManager>()
-                    .add("Install failed! DS2 Install path invalid! Please update it in the Settings page.".into(), ToastType::Error);
+                        .add("Install failed! DS2 Install path invalid! Please update it in the Settings page.".into(), ToastType::Error);
                     return;
                 }
             }
@@ -242,60 +245,34 @@ impl DS2State {
             .map(|(archive, _uid)| archive.clone())
             .collect();
 
-        // Gather files from archives
-        let mut refs: HashMap<PackageMemberRef, usize> = HashMap::new();
-        for (index, archive) in load_order.iter().enumerate() {
-            for file_ref in archive.get_refs() {
-                refs.insert(file_ref, index);
-            }
-        }
+        let archive_paths = load_order
+            .iter()
+            .map(|archive| archive.get_path().to_str().unwrap_or_default().to_string())
+            .collect::<Vec<_>>();
 
-        // Write files to disk
-        for (file_ref, index) in refs.iter() {
-            let write_path: PathBuf = ds2_path
-                .join(match file_ref.package_member_type {
-                    PackageMemberType::TEXTURE => "tex_override",
-                    PackageMemberType::ETexture => "ds2le_atmosphere_presets/textures",
-                    PackageMemberType::INI => "ds2le_atmosphere_presets",
-                    PackageMemberType::CONFIG => "tex_override",
-                    PackageMemberType::CFGPBR => "tex_override",
-                    PackageMemberType::PKG => "ds2le_atmosphere_presets",
-                })
-                .join(&file_ref.name);
+        let mut progress = self.progress;
+        let mut installing = self.installing;
 
-            let archive: ModArchive = load_order.get(*index).unwrap().clone(); // This shouldn't really throw an error
-            match archive.read_file_from_ref(file_ref) {
-                Err(e) => {
-                    use_context::<ToastManager>().add(
-                        format!("Error reading file from archive: {}", e),
-                        ToastType::Error,
-                    );
+        // 2) kick off server RPC
+        spawn(async move {
+            installing.set(true);
+            let _ = install_mods_server(
+                archive_paths,
+                ds2_path.to_str().unwrap_or_default().to_string(),
+            )
+            .await;
+            installing.set(false);
+        });
+
+        // 3) poll for progress
+        spawn(async move {
+            while *installing.read() {
+                if let Ok(pct) = get_install_progress().await {
+                    progress.set(Some(pct));
                 }
-
-                Ok(contents) => match contents {
-                    None => {
-                        use_context::<ToastManager>().add(
-                            "Error reading file from archive: None".into(),
-                            ToastType::Error,
-                        );
-                    }
-
-                    Some(contents) => match fs::create_dir_all(write_path.parent().unwrap()) {
-                        Err(e) => {
-                            use_context::<ToastManager>()
-                                .add(format!("Error creating directory: {}", e), ToastType::Error);
-                        }
-
-                        Ok(_) => if let Err(e) = fs::write(write_path, contents) {
-                            use_context::<ToastManager>()
-                                .add(format!("Error writing file: {}", e), ToastType::Error);
-                        },
-                    },
-                },
+                async_std::task::sleep(std::time::Duration::from_millis(100)).await;
             }
-        }
-
-        use_context::<ToastManager>()
-            .add("Mods successfully installed!".into(), ToastType::Success);
+            progress.set(Some(100));
+        });
     }
 }
