@@ -1,6 +1,6 @@
 use crate::data::{get_lemm_docs_dir, StoredLoadOrder, StoredLoadOrderItem};
 use crate::pages::{SettingsState, ToastManager, ToastType};
-use crate::server::{get_install_progress, install_mods_server};
+use crate::server::{get_install_tasks_progress, install_mods_server};
 use anyhow::Result;
 use dioxus::prelude::*;
 use lib_lemm::data::ModArchive;
@@ -253,26 +253,40 @@ impl DS2State {
         let mut progress = self.progress;
         let mut installing = self.installing;
 
+        installing.set(true);
+        progress.set(Some(0));
+
         // 2) kick off server RPC
         spawn(async move {
-            installing.set(true);
-            let _ = install_mods_server(
+            match install_mods_server(
                 archive_paths,
                 ds2_path.to_str().unwrap_or_default().to_string(),
             )
-            .await;
-            installing.set(false);
+            .await
+            {
+                Ok(_) => {}
+                Err(e) => {
+                    installing.set(false);
+                    use_context::<ToastManager>()
+                        .add(format!("Error writing files! {e}"), ToastType::Error);
+                }
+            }
         });
 
         // 3) poll for progress
         spawn(async move {
             while *installing.read() {
-                if let Ok(pct) = get_install_progress().await {
-                    progress.set(Some(pct));
+                if let Ok((started, done)) = get_install_tasks_progress().await {
+                    if started > 0 {
+                        progress.set(Some((done * 100) / started));
+
+                        if started == done {
+                            installing.set(false);
+                        }
+                    }
                 }
                 async_std::task::sleep(std::time::Duration::from_millis(100)).await;
             }
-            progress.set(Some(100));
         });
     }
 }

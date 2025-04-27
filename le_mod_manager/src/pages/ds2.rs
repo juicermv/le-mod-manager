@@ -85,16 +85,22 @@ pub fn DS2() -> Element {
                         }
 
                         if progress.is_some() {
-                        div {
-                            class: "progress mt-3",
-                            role: "progressbar",
                             div {
-                                class: "progress-bar progress-bar-striped progress-bar-animated",
-                                style: "width: ".to_string() + progress.unwrap().to_string().as_str() + "%;",
-                               { "Writing... ".to_string() + progress.unwrap().to_string().as_str() + "%"}
+                                class: "d-flex flex-row gap-2 flex-nowrap align-items-center mt-3",
+                                label {
+                                   { "Writing... ".to_string() + progress.unwrap().to_string().as_str() + "%"}
+                                }
+
+                                div {
+                                    class: "progress flex-fill",
+                                    role: "progressbar",
+                                    div {
+                                        class: "progress-bar progress-bar-striped progress-bar-animated",
+                                        style: "width: ".to_string() + progress.unwrap().to_string().as_str() + "%;",
+                                    }
+                                }
                             }
                         }
-                    }
                     }
                 }
                 br {}

@@ -138,12 +138,18 @@ pub fn Create() -> Element {
 
                     if progress.is_some() {
                         div {
-                            class: "progress",
-                            role: "progressbar",
-                            div {
-                                class: "progress-bar progress-bar-striped progress-bar-animated",
-                                style: "width: ".to_string() + progress.unwrap().to_string().as_str() + "%;",
+                            class: "d-flex flex-row gap-2 flex-nowrap align-items-center",
+                            label {
                                { "Writing... ".to_string() + progress.unwrap().to_string().as_str() + "%"}
+                            }
+
+                            div {
+                                class: "progress flex-fill",
+                                role: "progressbar",
+                                div {
+                                    class: "progress-bar progress-bar-striped progress-bar-animated",
+                                    style: "width: ".to_string() + progress.unwrap().to_string().as_str() + "%;",
+                                }
                             }
                         }
                     }

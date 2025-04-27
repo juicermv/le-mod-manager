@@ -1,12 +1,12 @@
+use crate::pages::{ToastManager, ToastType};
+use crate::server::{export_archive_server, get_export_tasks_progress};
+use async_std::task;
 use dioxus::prelude::*;
 use lib_lemm::data::PackageMemberType;
 use rfd::AsyncFileDialog;
 use std::collections::HashMap;
 use std::path::PathBuf;
 use tokio::time::Duration;
-use async_std::task;
-use crate::pages::{ToastManager, ToastType};
-use crate::server::{export_archive_server, get_export_progress};
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct CreateState {
@@ -17,7 +17,7 @@ pub struct CreateState {
     pub mod_version: Signal<String>,
 
     pub progress: Signal<Option<u64>>,
-    pub exporting: Signal<bool>
+    pub exporting: Signal<bool>,
 }
 
 impl CreateState {
@@ -29,7 +29,7 @@ impl CreateState {
             mod_author: Signal::new(String::new()),
             mod_version: Signal::new(String::new()),
             progress: Signal::new(None),
-            exporting: Signal::new(false)
+            exporting: Signal::new(false),
         }
     }
 
@@ -51,28 +51,24 @@ impl CreateState {
             .set_title("Add files to mod archive...");
 
         let result = dialog.pick_files().await;
-        if let Some (files) = result {
+        if let Some(files) = result {
             let mut added_files = self.files.read().clone();
             let mut counter = 0;
 
             for file in files {
                 let f_type: PackageMemberType = match file.path().extension() {
-                    Some(ext) => {
-                        match ext.to_str() {
-                            Some(extension) => {
-                                match extension {
-                                    "pkg" => PackageMemberType::PKG,
-                                    "ini" => PackageMemberType::INI,
-                                    "dds" => PackageMemberType::TEXTURE,
-                                    "cfg" => PackageMemberType::CONFIG,
-                                    "cfgpbr" => PackageMemberType::CFGPBR,
-                                    _ => continue
-                                }
-                            }
+                    Some(ext) => match ext.to_str() {
+                        Some(extension) => match extension {
+                            "pkg" => PackageMemberType::PKG,
+                            "ini" => PackageMemberType::INI,
+                            "dds" => PackageMemberType::TEXTURE,
+                            "cfg" => PackageMemberType::CONFIG,
+                            "cfgpbr" => PackageMemberType::CFGPBR,
+                            _ => continue,
+                        },
 
-                            None => { continue }
-                        }
-                    }
+                        None => continue,
+                    },
 
                     None => {
                         continue;
@@ -84,7 +80,10 @@ impl CreateState {
             }
 
             self.files.set(added_files);
-            use_context::<ToastManager>().add(format!("Successfully added {counter} files!"), ToastType::Success);
+            use_context::<ToastManager>().add(
+                format!("Successfully added {counter} files!"),
+                ToastType::Success,
+            );
         }
     }
 
@@ -94,7 +93,7 @@ impl CreateState {
             .set_title("Add Engine Textures to mod archive...");
 
         let result = dialog.pick_files().await;
-        if let Some (files) = result {
+        if let Some(files) = result {
             let mut added_files = self.files.read().clone();
             let mut counter = 0;
 
@@ -104,13 +103,15 @@ impl CreateState {
             }
 
             self.files.set(added_files);
-            use_context::<ToastManager>().add(format!("Successfully added {counter} files!"), ToastType::Success);
+            use_context::<ToastManager>().add(
+                format!("Successfully added {counter} files!"),
+                ToastType::Success,
+            );
         }
     }
 
     pub async fn update_file_type(&mut self, item: &PathBuf, f_type: PackageMemberType) {
         let mut files = self.files.read().clone();
-
 
         self.files.set(HashMap::new());
         task::sleep(Duration::from_millis(50)).await; // Fix a small bug that is out of my control
@@ -132,18 +133,22 @@ impl CreateState {
     }
 
     async fn select_export_path() -> Option<PathBuf> {
-        AsyncFileDialog::new().add_filter("LEMM Archive", &["lemm"]).set_title("Export your mod...").save_file().await.map(|handle| PathBuf::from(handle.path()))
+        AsyncFileDialog::new()
+            .add_filter("LEMM Archive", &["lemm"])
+            .set_title("Export your mod...")
+            .save_file()
+            .await
+            .map(|handle| PathBuf::from(handle.path()))
     }
 
-
     pub fn export_archive(&mut self) {
-        let files: Vec<(String, String)> =
-            self.files
-                .read()
-                .clone()
-                .into_iter()
-                .map(|(p, t)| (p.to_string_lossy().into_owned(), t.into()))
-                .collect();
+        let files: Vec<(String, String)> = self
+            .files
+            .read()
+            .clone()
+            .into_iter()
+            .map(|(p, t)| (p.to_string_lossy().into_owned(), t.into()))
+            .collect();
 
         let name = self.mod_name.read().clone();
         let author = self.mod_author.read().clone();
@@ -151,28 +156,39 @@ impl CreateState {
         let mut progress = self.progress;
         let mut exporting = self.exporting;
 
+        exporting.set(true);
+        progress.set(Some(0));
+        
         // 1) kick off the export on the server
         spawn(async move {
-            exporting.set(true);
             // prompt the user for a path
             if let Some(path) = Self::select_export_path().await {
                 let output = path.to_string_lossy().into_owned();
-                let _ = export_archive_server(files, name, author, version, output).await;
+                match export_archive_server(files, name, author, version, output).await {
+                    Ok(_) => {}
+                    Err(e) => {
+                        exporting.set(false);
+                        use_context::<ToastManager>()
+                            .add(format!("Error writing archive! {e}"), ToastType::Error);;
+                    }
+                }
             }
-            exporting.set(false);
         });
 
         // 2) poll the progress endpoint
         spawn(async move {
             while *exporting.read() {
-                if let Ok(pct) = get_export_progress().await {
-                    progress.set(Some(pct));
+                if let Ok((started, done)) = get_export_tasks_progress().await {
+                    if started > 0 {
+                        progress.set(Some((done * 100) / started));
+
+                        if started == done {
+                            exporting.set(false);
+                        }
+                    }
                 }
                 tokio::time::sleep(Duration::from_millis(100)).await;
             }
-            // ensure 100% at the end
-            progress.set(Some(100));
         });
     }
 }
-

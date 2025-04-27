@@ -11,8 +11,9 @@ use std::{
 use tokio::task::JoinError;
 use std::fs;
 
-// A global to hold install progress [0..100]
-static INSTALL_PROGRESS: Lazy<AtomicU64> = Lazy::new(|| AtomicU64::new(0));
+static TASKS_STARTED: Lazy<AtomicU64> = Lazy::new(|| AtomicU64::new(0));
+static TASKS_DONE: Lazy<AtomicU64> = Lazy::new(|| AtomicU64::new(0));
+
 
 #[server]
 pub async fn install_mods_server(
@@ -20,7 +21,8 @@ pub async fn install_mods_server(
     ds2_path: String,
 ) -> Result<(), ServerFnError> {
     // reset progress
-    INSTALL_PROGRESS.store(0, Ordering::SeqCst);
+    TASKS_DONE.store(0, Ordering::SeqCst);
+    TASKS_STARTED.store(0, Ordering::SeqCst);
 
     // spawn_blocking so it doesn’t tie up the async threads
     let load_order = archive_paths
@@ -46,6 +48,7 @@ pub async fn install_mods_server(
 
         // Write files to disk
         for (i, (file_ref, index)) in refs.iter().enumerate() {
+            TASKS_STARTED.fetch_add(1, Ordering::SeqCst);
             let write_path: PathBuf = ds2_path
                 .join(match file_ref.package_member_type {
                     PackageMemberType::TEXTURE => "tex_override",
@@ -57,18 +60,23 @@ pub async fn install_mods_server(
                 })
                 .join(&file_ref.name);
 
+            let file_ref = file_ref.clone();
             let archive: ModArchive = load_order.get(*index).unwrap().clone(); // This shouldn't really throw an error
-            match archive.read_file_from_ref(file_ref) {
-                Ok(contents) => {
-                    fs::create_dir_all(write_path.parent().unwrap());
-                    fs::write(write_path, contents.unwrap_or_default())?;
-                    INSTALL_PROGRESS.store(((i + 1) * 100 / total) as u64, Ordering::SeqCst);
-                }
+            tokio::task::spawn(async move {
+                match archive.read_file_from_ref(&file_ref) {
+                    Ok(contents) => {
+                        fs::create_dir_all(write_path.parent().unwrap());
+                        fs::write(write_path, contents.unwrap_or_default())?;
 
-                Err(err) => {
-                    return Err(ServerFnError::new(err));
+                        TASKS_DONE.fetch_add(1, Ordering::SeqCst);
+                        Ok(())
+                    }
+
+                    Err(err) => {
+                        Err(ServerFnError::new(err))
+                    }
                 }
-            }
+            });
         }
         Ok(())
     })
@@ -77,6 +85,6 @@ pub async fn install_mods_server(
 }
 
 #[server]
-pub async fn get_install_progress() -> Result<u64, ServerFnError> {
-    Ok(INSTALL_PROGRESS.load(Ordering::SeqCst))
+pub async fn get_install_tasks_progress() -> Result<(u64, u64), ServerFnError> {
+    Ok((TASKS_STARTED.load(Ordering::SeqCst), TASKS_DONE.load(Ordering::SeqCst)))
 }
