@@ -18,6 +18,8 @@ pub struct CreateState {
 
     pub progress: Signal<Option<u64>>,
     pub exporting: Signal<bool>,
+    
+    pub error: Signal<Option<String>>
 }
 
 impl CreateState {
@@ -30,6 +32,7 @@ impl CreateState {
             mod_version: Signal::new(String::new()),
             progress: Signal::new(None),
             exporting: Signal::new(false),
+            error: Signal::new(None),
         }
     }
 
@@ -155,6 +158,7 @@ impl CreateState {
         let version = self.mod_version.read().clone();
         let mut progress = self.progress;
         let mut exporting = self.exporting;
+        let mut error = self.error;
 
         exporting.set(true);
         progress.set(Some(0));
@@ -168,8 +172,7 @@ impl CreateState {
                     Ok(_) => {}
                     Err(e) => {
                         exporting.set(false);
-                        use_context::<ToastManager>()
-                            .add(format!("Error writing archive! {e}"), ToastType::Error);;
+                        error.set(Some(format!("Error writing archive! {e}")));
                     }
                 }
             }

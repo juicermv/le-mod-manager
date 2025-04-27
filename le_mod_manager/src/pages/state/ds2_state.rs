@@ -16,6 +16,8 @@ pub struct DS2State {
 
     pub progress: Signal<Option<u64>>,
     pub installing: Signal<bool>,
+
+    pub error: Signal<Option<String>>
 }
 
 impl DS2State {
@@ -25,6 +27,7 @@ impl DS2State {
             enabled_mods: Signal::new(HashMap::new()),
             progress: Signal::new(None),
             installing: Signal::new(false),
+            error: Signal::new(None),
         }
     }
 
@@ -188,6 +191,7 @@ impl DS2State {
                                     enabled_mods: Signal::new(map),
                                     progress: Default::default(),
                                     installing: Default::default(),
+                                    error: Signal::new(None),
                                 };
                             }
                             Err(e) => {
@@ -252,6 +256,7 @@ impl DS2State {
 
         let mut progress = self.progress;
         let mut installing = self.installing;
+        let mut error = self.error;
 
         installing.set(true);
         progress.set(Some(0));
@@ -267,8 +272,7 @@ impl DS2State {
                 Ok(_) => {}
                 Err(e) => {
                     installing.set(false);
-                    use_context::<ToastManager>()
-                        .add(format!("Error writing files! {e}"), ToastType::Error);
+                    error.set(Some(format!("Error writing files! {e}")));
                 }
             }
         });
