@@ -51,11 +51,13 @@ impl SettingsState {
     }
 
     pub async fn try_set_ds2_path(&mut self, path: String) {
+        let mut toast_manager = use_context::<ToastManager>();
+
         match dunce::canonicalize(&path) {
             Err(_) => {
                 self.ds2_path.set(path);
                 self.ds2_path_valid.set(false);
-                use_context::<ToastManager>().add(
+                toast_manager.add(
                     "Invalid DS2 path. Please select the correct folder.".into(),
                     ToastType::Error,
                 );
@@ -92,7 +94,7 @@ impl SettingsState {
                 } else {
                     self.ds2_path.set(path);
                     self.ds2_path_valid.set(false);
-                    use_context::<ToastManager>().add(
+                    toast_manager.add(
                         "Invalid DS2 path. Please select the correct folder.".into(),
                         ToastType::Error,
                     );
@@ -116,25 +118,28 @@ impl SettingsState {
 
     // TODO: Error handling
     pub async fn write(&mut self) {
-        if self.ds2_path_valid.read().clone() {
+        let mut toast_manager = use_context::<ToastManager>();
+
+        if *self.ds2_path_valid.read() {
             match get_lemm_docs_dir() {
                 Err(e) => {
                     println!("Error getting documents directory: {}", e);
-                    use_context::<ToastManager>().add(
+                    toast_manager.add(
                         format!("Error getting documents directory: {}", e),
                         ToastType::Error,
                     );
                 }
                 Ok(path) => {
                     let file_path = path.join("settings.toml");
-                    let mut settings = SettingsFile::default();
-                    settings.ds2_path = self.ds2_path.read().clone();
-                    settings.ds2_path_valid = self.ds2_path_valid.read().clone();
+                    let settings = SettingsFile {
+                        ds2_path: self.ds2_path.read().clone(),
+                        ds2_path_valid: *self.ds2_path_valid.read(),
+                    };
 
                     let toml_string = toml::to_string_pretty(&settings).unwrap_or_default();
                     fs::write(file_path, toml_string).unwrap_or_default();
                     self.has_saved.set(true);
-                    use_context::<ToastManager>().add(
+                    toast_manager.add(
                         "Settings saved!".into(),
                         ToastType::Success,
                     );

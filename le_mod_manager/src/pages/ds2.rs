@@ -2,28 +2,29 @@ use crate::components::{Button, Container, ModListItem};
 use crate::data::ButtonColor;
 use crate::pages::state::DS2State;
 use crate::pages::{CreateState, ToastManager, ToastType};
+use dioxus::html::completions::CompleteWithBraces::progress;
 use dioxus::prelude::*;
 
 #[component]
 pub fn DS2() -> Element {
+    let mut toast_manager = use_context::<ToastManager>();
     let state = use_context::<DS2State>();
     let load_order = state.load_order;
     let mod_options = state.enabled_mods;
-    let progress= *state.progress.read();
+    let mut progress = state.progress;
     let is_installing = state.installing;
+    let mut error = state.error;
 
     use_effect(move || {
-        let p = *state.progress.read();
+        let p = progress();
         if p == Some(100u64) {
-            use_context::<DS2State>().progress.set(None);
-            use_context::<ToastManager>().add("Data written successfully!".to_string(), ToastType::Success);
+            progress.set(None);
+            toast_manager.add("Data written successfully!".to_string(), ToastType::Success);
         }
-    });
 
-    use_effect(move || {
-        if let Some(e) = state.error.read().clone() {
-            use_context::<ToastManager>().add(e, ToastType::Error);
-            use_context::<CreateState>().error.set(None);
+        if let Some(e) = error() {
+            toast_manager.add(e, ToastType::Error);
+            error.set(None);
         }
     });
 
@@ -91,7 +92,7 @@ pub fn DS2() -> Element {
                             }
                         }
 
-                        if progress.is_some() {
+                        if progress().is_some() {
                             div {
                                 class: "d-flex flex-row gap-2 flex-nowrap align-items-center mt-3",
                                 label {

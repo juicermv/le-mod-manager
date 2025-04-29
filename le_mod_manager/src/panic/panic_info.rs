@@ -44,7 +44,7 @@ impl PanicInfo {
 
 impl Display for PanicInfo {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match serde_json::to_string(self) {
+        match serde_json::to_string_pretty(self) {
             Ok(json) => f.write_str(&json),
             Err(e) => Err(fmt::Error::custom(e)),
         }

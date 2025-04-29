@@ -1,32 +1,33 @@
 use crate::components::{Button, Container, FileList};
 use crate::data::{ButtonColor, Padding, StepUnit};
 use crate::pages::{CreateState, ToastManager, ToastType};
+use dioxus::html::completions::CompleteWithBraces::progress;
+use dioxus::html::ol::start;
 use dioxus::prelude::*;
 use lib_lemm::data::PackageMemberType;
 use std::path::PathBuf;
-use dioxus::html::ol::start;
 
 #[component]
 pub fn Create() -> Element {
     let state = use_context::<CreateState>();
+    let mut toast_manager= use_context::<ToastManager>();
 
-    /*let user_dirs = UserDirs::new().unwrap();
-    let docs = PathBuf::from(user_dirs.document_dir().unwrap());
-    let video = PathBuf::from(user_dirs.video_dir().unwrap());
-    let files = vec![
-        (video, PackageMemberType::TEXTURE),
-        (docs, PackageMemberType::INI)
-    ];*/
+    let mut progress = state.progress;
+    let mod_name = state.mod_name;
+    let mod_version = state.mod_version;
+    let mod_author = state.mod_author;
+    let state_files = state.files;
+    let mut error = state.error;
+    let filter = state.filter;
+    let exporting = state.exporting;
 
-    let mut files: Vec<(PathBuf, PackageMemberType)> = state
-        .files
-        .read()
-        .clone()
+    let mut can_export: bool = false;
+    
+    let mut files: Vec<(PathBuf, PackageMemberType)> = state_files()
         .iter()
         .map(|(key, val)| (key.clone(), *val))
         .collect();
-
-    // Alphabetical sort (hopefully)
+    
     files.sort_by(|(a_path, a_type), (b_path, b_type)| {
         let a_str = String::from(a_path.file_name().unwrap().to_str().unwrap()).to_lowercase();
         let b_str = String::from(b_path.file_name().unwrap().to_str().unwrap()).to_lowercase();
@@ -34,27 +35,29 @@ pub fn Create() -> Element {
         a_type.cmp(b_type).then(a_str.cmp(&b_str))
     });
 
-    let mod_name_empty = state.mod_name.read().clone().is_empty();
-    let mod_version_empty = state.mod_version.read().clone().is_empty();
-    let mod_author_empty = state.mod_author.read().clone().is_empty();
-    let progress = *state.progress.read();
-    let can_export: bool = (!files.is_empty()) && (!mod_author_empty) && (!mod_version_empty) && (!mod_name_empty);
-
     use_effect(move || {
-        let p = *state.progress.read();
+        let p = progress();
         if p == Some(100u64) {
-            use_context::<CreateState>().progress.set(None);
-            use_context::<ToastManager>().add("Mod archive written successfully!".to_string(), ToastType::Success);
+            progress.set(None);
+            toast_manager.add(
+                "Mod archive written successfully!".to_string(),
+                ToastType::Success,
+            );
+        }
+
+        if let Some(e) = error() {
+            toast_manager.add(e, ToastType::Error);
+            error.set(None);
         }
     });
 
+    let files_empty =  files.is_empty();
     use_effect(move || {
-        if let Some(e) = state.error.read().clone() {
-            use_context::<ToastManager>().add(e, ToastType::Error);
-            use_context::<CreateState>().error.set(None);
-        }
+        can_export = (!files_empty)
+            && (!mod_author().is_empty())
+            && (!mod_version().is_empty())
+            && (!mod_name().is_empty());
     });
-
 
     rsx! {
         Container {
@@ -118,7 +121,7 @@ pub fn Create() -> Element {
 
                 FileList {
                     files: files,
-                    filter: *state.filter.read(),
+                    filter: filter(),
                     on_delete: move | path | use_context::<CreateState>().remove_file(&path),
                     on_type_change: move |(path, new_type): (PathBuf, PackageMemberType)| async move{ use_context::<CreateState>().update_file_type(&path, new_type).await },
                     on_filter_change: move |new_filter| use_context::<CreateState>().update_filter(new_filter),
@@ -137,14 +140,14 @@ pub fn Create() -> Element {
                         onclick: move |_| {
                             use_context::<CreateState>().export_archive()
                         },
-                        disabled: !can_export || *state.exporting.read(),
+                        disabled: !can_export || exporting(),
                         i {
                             class: "me-2 bi bi-box-seam"
                         }
                         "Export your package"
                     }
 
-                    if progress.is_some() {
+                    if progress().is_some() {
                         div {
                             class: "d-flex flex-row gap-2 flex-nowrap align-items-center",
                             label {

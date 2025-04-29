@@ -17,7 +17,7 @@ pub struct DS2State {
     pub progress: Signal<Option<u64>>,
     pub installing: Signal<bool>,
 
-    pub error: Signal<Option<String>>
+    pub error: Signal<Option<String>>,
 }
 
 impl DS2State {
@@ -147,13 +147,14 @@ impl DS2State {
     }
 
     pub fn write(&self) {
+        let mut toast_manager = use_context::<ToastManager>();
+
         match self.write_internal() {
             Ok(_) => {
-                use_context::<ToastManager>().add("Mod list saved!".into(), ToastType::Success);
+                toast_manager.add("Mod list saved!".into(), ToastType::Success);
             }
             Err(e) => {
-                use_context::<ToastManager>()
-                    .add(format!("Error writing load order: {}", e), ToastType::Error);
+                toast_manager.add(format!("Error writing load order: {}", e), ToastType::Error);
                 println!("Error writing load order: {}", e);
             }
         }
@@ -218,6 +219,8 @@ impl DS2State {
     }
 
     pub fn install(&mut self) {
+        let mut toast_manager = use_context::<ToastManager>();
+
         let ds2_path = match dunce::canonicalize(
             use_context::<SettingsState>().ds2_path.read().clone(),
         ) {
@@ -225,13 +228,13 @@ impl DS2State {
                 if path.is_dir() {
                     path
                 } else {
-                    use_context::<ToastManager>()
+                    toast_manager
                         .add("Install failed! DS2 Install path invalid! Please update it in the Settings page.".into(), ToastType::Error);
                     return;
                 }
             }
             Err(e) => {
-                use_context::<ToastManager>()
+                toast_manager
                     .add(format!("Install failed! DS2 Install path invalid! Please update it in the Settings page. ({})", e), ToastType::Error);
                 return;
             }

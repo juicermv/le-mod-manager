@@ -49,6 +49,8 @@ impl CreateState {
     }
 
     pub async fn pick_files(&mut self) {
+        let mut toast_manager = use_context::<ToastManager>();
+
         let dialog = AsyncFileDialog::new()
             .add_filter("LE Files", &["pkg", "ini", "dds", "cfg", "cfgpbr"])
             .set_title("Add files to mod archive...");
@@ -83,7 +85,7 @@ impl CreateState {
             }
 
             self.files.set(added_files);
-            use_context::<ToastManager>().add(
+            toast_manager.add(
                 format!("Successfully added {counter} files!"),
                 ToastType::Success,
             );
@@ -91,6 +93,8 @@ impl CreateState {
     }
 
     pub async fn pick_engine_textures(&mut self) {
+        let mut toast_manager = use_context::<ToastManager>();
+
         let dialog = AsyncFileDialog::new()
             .add_filter("LE Engine Texture", &["dds"])
             .set_title("Add Engine Textures to mod archive...");
@@ -106,7 +110,7 @@ impl CreateState {
             }
 
             self.files.set(added_files);
-            use_context::<ToastManager>().add(
+            toast_manager.add(
                 format!("Successfully added {counter} files!"),
                 ToastType::Success,
             );
