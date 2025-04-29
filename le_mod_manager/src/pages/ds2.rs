@@ -1,7 +1,7 @@
 use crate::components::{Button, Container, ModListItem};
 use crate::data::ButtonColor;
 use crate::pages::state::DS2State;
-use crate::pages::{ToastManager, ToastType};
+use crate::pages::{CreateState, ToastManager, ToastType};
 use dioxus::prelude::*;
 
 #[component]
@@ -17,6 +17,13 @@ pub fn DS2() -> Element {
         if p == Some(100u64) {
             use_context::<DS2State>().progress.set(None);
             use_context::<ToastManager>().add("Data written successfully!".to_string(), ToastType::Success);
+        }
+    });
+
+    use_effect(move || {
+        if let Some(e) = state.error.read().clone() {
+            use_context::<ToastManager>().add(e, ToastType::Error);
+            use_context::<CreateState>().error.set(None);
         }
     });
 

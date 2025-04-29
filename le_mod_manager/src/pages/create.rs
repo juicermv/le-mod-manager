@@ -4,6 +4,7 @@ use crate::pages::{CreateState, ToastManager, ToastType};
 use dioxus::prelude::*;
 use lib_lemm::data::PackageMemberType;
 use std::path::PathBuf;
+use dioxus::html::ol::start;
 
 #[component]
 pub fn Create() -> Element {
@@ -44,6 +45,13 @@ pub fn Create() -> Element {
         if p == Some(100u64) {
             use_context::<CreateState>().progress.set(None);
             use_context::<ToastManager>().add("Mod archive written successfully!".to_string(), ToastType::Success);
+        }
+    });
+
+    use_effect(move || {
+        if let Some(e) = state.error.read().clone() {
+            use_context::<ToastManager>().add(e, ToastType::Error);
+            use_context::<CreateState>().error.set(None);
         }
     });
 
