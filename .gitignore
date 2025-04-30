@@ -11,3 +11,5 @@
 *.lemm
 le-mod-manager.zip
 dist/
+
+dump_*.json
