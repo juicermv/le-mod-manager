@@ -2831,6 +2831,7 @@ dependencies = [
  "directories",
  "dunce",
  "lib_lemm",
+ "log",
  "once_cell",
  "rand 0.9.1",
  "rfd 0.15.3",

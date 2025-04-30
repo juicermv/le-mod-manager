@@ -8,6 +8,9 @@ pub use panic_location::*;
 pub use panic_info::*;
 
 pub fn capture_panic() {
+    std::env::set_var("RUST_LIB_BACKTRACE", "1");
+    std::env::set_var("RUST_BACKTRACE", "full");
+    
     std::panic::set_hook(Box::new(|panic_info| {
         let backtrace = Backtrace::capture();
         let mut info = PanicInfo::from_hook(panic_info);
