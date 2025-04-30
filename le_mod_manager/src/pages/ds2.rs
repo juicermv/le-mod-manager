@@ -84,7 +84,6 @@ pub fn DS2() -> Element {
                                 color: ButtonColor::Success,
                                 onclick: |_| {
                                     use_context::<DS2State>().write();
-                                    use_context::<DS2State>().install();
                                 },
                                 disabled: load_order.is_empty() || is_installing(),
                                 "Save & apply to game..."
@@ -94,9 +93,9 @@ pub fn DS2() -> Element {
 
                         if progress().is_some() {
                             div {
-                                class: "d-flex flex-row gap-2 flex-nowrap align-items-center mt-3",
+                                class: "d-flex flex-row gap-2 flex-nowrap align-items-center mt-2",
                                 label {
-                                   { "Writing... ".to_string() + progress.unwrap().to_string().as_str() + "%"}
+                                   { "Writing... ".to_string() + progress().unwrap().to_string().as_str() + "%"}
                                 }
 
                                 div {
@@ -104,7 +103,7 @@ pub fn DS2() -> Element {
                                     role: "progressbar",
                                     div {
                                         class: "progress-bar progress-bar-striped progress-bar-animated",
-                                        style: "width: ".to_string() + progress.unwrap().to_string().as_str() + "%;",
+                                        style: "width: ".to_string() + progress().unwrap().to_string().as_str() + "%;",
                                     }
                                 }
                             }
@@ -121,6 +120,7 @@ pub fn DS2() -> Element {
                 for (index , item) in load_order.iter().enumerate() {
                     ModListItem {
                         key: "mod_{index}",
+                        enabled: !is_installing(),
                         index: index as u32,
                         rnd_id: item.1,
                         total: load_order.len() as u32,

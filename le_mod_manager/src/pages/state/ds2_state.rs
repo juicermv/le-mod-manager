@@ -146,12 +146,13 @@ impl DS2State {
         }
     }
 
-    pub fn write(&self) {
+    pub fn write(&mut self) {
         let mut toast_manager = use_context::<ToastManager>();
 
         match self.write_internal() {
             Ok(_) => {
                 toast_manager.add("Mod list saved!".into(), ToastType::Success);
+                self.install();
             }
             Err(e) => {
                 toast_manager.add(format!("Error writing load order: {}", e), ToastType::Error);

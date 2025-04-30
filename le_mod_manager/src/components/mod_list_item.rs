@@ -4,21 +4,18 @@ use dioxus::prelude::*;
 use lib_lemm::data::ModArchive;
 
 
-#[derive(PartialEq, Props, Clone)]
-pub struct ModListItemProps {
+#[component]
+pub fn ModListItem(
     index: u32,
     total: u32,
     rnd_id: u32,
     mod_archive: ModArchive,
     toggled: bool,
+    enabled: bool,
     on_increase_order: EventHandler<u32>,
     on_decrease_order: EventHandler<u32>,
     on_remove: EventHandler<u32>,
     on_toggled: EventHandler<u32>,
-}
-
-pub fn ModListItem(
-    props: ModListItemProps,
     // TODO: Implement ability to toggle which type of asset we want to include from the mod  (textures, pkgs, etc)
 ) -> Element {
     rsx! {
@@ -26,7 +23,7 @@ pub fn ModListItem(
             class: "card",
             div {
                 class: "card-header",
-                { (props.index + 1).to_string() }
+                { (index + 1).to_string() }
             }
 
             div {
@@ -35,8 +32,8 @@ pub fn ModListItem(
                     class: "card-title",
                     h3 {
                         { format!("{} {}",
-                            props.mod_archive.get_mod_name(),
-                            props.mod_archive.get_mod_version())
+                            mod_archive.get_mod_name(),
+                            mod_archive.get_mod_version())
                         }
                     }
                 }
@@ -45,7 +42,7 @@ pub fn ModListItem(
                     p {
                         {
                             format!("Author: {}",
-                                props.mod_archive.get_mod_author())
+                                mod_archive.get_mod_author())
                         }
                     }
                 }
@@ -55,14 +52,16 @@ pub fn ModListItem(
                     div {
                         Button {
                             class: "me-2",
-                            color: if props.toggled {
+                            color: if toggled {
                                 ButtonColor::Success
                             } else {
                                 ButtonColor::Outline(Box::new(ButtonColor::Danger))
                             },
+                            
+                            disabled: !enabled,
 
-                            onclick: move |_| props.on_toggled.call(props.rnd_id),
-                            if props.toggled {
+                            onclick: move |_| on_toggled.call(rnd_id),
+                            if toggled {
                                 "Enabled"
                             } else {
                                 "Disabled"
@@ -72,16 +71,16 @@ pub fn ModListItem(
                         div {
                             class: "btn-group",
                             Button {
-                                onclick: move |_| props.on_increase_order.call(props.index),
-                                disabled: props.index == props.total - 1,
+                                onclick: move |_| on_increase_order.call(index),
+                                disabled: (index == total - 1) || !enabled,
                                 i {
                                     class: "bi bi-caret-down-fill",
                                 }
                             }
 
                             Button {
-                                onclick: move |_| props.on_decrease_order.call(props.index),
-                                disabled: props.index == 0,
+                                onclick: move |_| on_decrease_order.call(index),
+                                disabled: (index == 0) || !enabled,
                                 i {
                                     class: "bi bi-caret-up-fill",
                                 }
@@ -91,9 +90,9 @@ pub fn ModListItem(
 
 
                     Button {
-                        onclick: move |_| props.on_remove.call(props.index),
+                        onclick: move |_| on_remove.call(index),
                         color: ButtonColor::Outline(Box::new(ButtonColor::Danger)),
-                        disabled: false,
+                        disabled: !enabled,
                         i {
                             class: "bi bi-trash",
                         }
