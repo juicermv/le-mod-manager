@@ -152,7 +152,7 @@ impl DS2State {
         match self.write_internal() {
             Ok(_) => {
                 toast_manager.add("Mod list saved!".into(), ToastType::Success);
-                self.install();
+                //self.install();
             }
             Err(e) => {
                 toast_manager.add(format!("Error writing load order: {}", e), ToastType::Error);

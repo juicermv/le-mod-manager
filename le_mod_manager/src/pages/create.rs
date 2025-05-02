@@ -10,7 +10,7 @@ use std::path::PathBuf;
 #[component]
 pub fn Create() -> Element {
     let state = use_context::<CreateState>();
-    let mut toast_manager= use_context::<ToastManager>();
+    let mut toast_manager = use_context::<ToastManager>();
 
     let mut progress = state.progress;
     let mod_name = state.mod_name;
@@ -22,12 +22,12 @@ pub fn Create() -> Element {
     let exporting = state.exporting;
 
     let mut can_export: bool = false;
-    
+
     let mut files: Vec<(PathBuf, PackageMemberType)> = state_files()
         .iter()
         .map(|(key, val)| (key.clone(), *val))
         .collect();
-    
+
     files.sort_by(|(a_path, a_type), (b_path, b_type)| {
         let a_str = String::from(a_path.file_name().unwrap().to_str().unwrap()).to_lowercase();
         let b_str = String::from(b_path.file_name().unwrap().to_str().unwrap()).to_lowercase();
@@ -51,7 +51,7 @@ pub fn Create() -> Element {
         }
     });
 
-    let files_empty =  files.is_empty();
+    let files_empty = files.is_empty();
     use_effect(move || {
         can_export = (!files_empty)
             && (!mod_author().is_empty())
@@ -123,10 +123,10 @@ pub fn Create() -> Element {
                     files: files,
                     filter: filter(),
                     on_delete: move | path | use_context::<CreateState>().remove_file(&path),
-                    on_type_change: move |(path, new_type): (PathBuf, PackageMemberType)| async move{ use_context::<CreateState>().update_file_type(&path, new_type).await },
+                    on_type_change: async move |(path, new_type): (PathBuf, PackageMemberType)| { use_context::<CreateState>().update_file_type(&path, new_type).await },
                     on_filter_change: move |new_filter| use_context::<CreateState>().update_filter(new_filter),
-                    on_add: move |_| async move { use_context::<CreateState>().pick_files().await },
-                    on_add_engine_texture: move |_| async move { use_context::<CreateState>().pick_engine_textures().await }
+                    on_add: async move |_| { use_context::<CreateState>().pick_files().await },
+                    on_add_engine_texture: async move |_|{ use_context::<CreateState>().pick_engine_textures().await }
                 }
 
                 div {

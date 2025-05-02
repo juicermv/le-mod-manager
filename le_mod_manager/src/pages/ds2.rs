@@ -60,7 +60,7 @@ pub fn DS2() -> Element {
                         div { class: "d-flex gap-2 flex-wrap",
                             Button {
                                 class: "flex-fill",
-                                onclick: move |_| async move {
+                                onclick: async move |_| {
                                     use_context::<DS2State>().pick_archives().await;
                                 },
                                 "Add to list..."
@@ -83,7 +83,9 @@ pub fn DS2() -> Element {
                                 class: "flex-fill",
                                 color: ButtonColor::Success,
                                 onclick: |_| {
-                                    use_context::<DS2State>().write();
+                                    let mut state = use_context::<DS2State>();
+                                    state.write();
+                                    state.install();
                                 },
                                 disabled: load_order.is_empty() || is_installing(),
                                 "Save & apply to game..."
@@ -125,9 +127,9 @@ pub fn DS2() -> Element {
                         rnd_id: item.1,
                         total: load_order.len() as u32,
                         mod_archive: item.0.clone(),
-                        on_increase_order: move |idx| async move { use_context::<DS2State>().increase_mod_order(idx).await },
-                        on_decrease_order: move |idx| async move { use_context::<DS2State>().decrease_mod_order(idx).await },
-                        on_remove: move |idx| async move { use_context::<DS2State>().remove_mod(idx).await },
+                        on_increase_order: async move |idx| { use_context::<DS2State>().increase_mod_order(idx).await },
+                        on_decrease_order: async move |idx| { use_context::<DS2State>().decrease_mod_order(idx).await },
+                        on_remove: async move |idx| { use_context::<DS2State>().remove_mod(idx).await },
                         on_toggled: move |id| async move { use_context::<DS2State>().toggle_mod(id).await },
                         toggled: mod_options()[&item.1],
                     }

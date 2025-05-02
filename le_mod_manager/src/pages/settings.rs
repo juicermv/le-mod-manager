@@ -19,11 +19,11 @@ pub fn Settings() -> Element {
                     value: ds2_path,
                     label: "DS2 Game Directory Path",
                     is_valid: ds2_path_valid(),
-                    onchange: move |e: FormEvent| async move {
+                    onchange: async move |e: FormEvent| {
                         let value: String = e.value();
                         use_context::<SettingsState>().try_set_ds2_path(value).await;
                     },
-                    onpickerclicked: move |_| async move {
+                    onpickerclicked: async move |_| {
                         use_context::<SettingsState>().pick_ds2_path().await
                     }
                 }
@@ -39,7 +39,7 @@ pub fn Settings() -> Element {
                             ButtonColor::Success
                         }
                     },
-                    onclick: move |_| async move {
+                    onclick: async move |_| {
                         use_context::<SettingsState>().write().await;
                     },
 
