@@ -1,16 +1,12 @@
-[workspace]
-resolver = "2"
-members = ["le_mod_manager", "lib_lemm"]
+[package]
+name = "lib_lemm"
+repository = "https://github.com/juicermv/le-mod-manager"
+version = "0.1.0"
+edition = "2021"
 
-[workspace.dependencies]
-lib_lemm = { path = "lib_lemm" }
-
-[profile.wasm-dev]
-inherits = "dev"
-opt-level = 1
-
-[profile.server-dev]
-inherits = "dev"
-
-[profile.android-dev]
-inherits = "dev"
+[dependencies]
+anyhow = "1.0.97"
+ascii = "1.1.0"
+flate2 = "1.1.1"
+strum = { version = "0.27.1" }
+strum_macros = "0.27.1"
